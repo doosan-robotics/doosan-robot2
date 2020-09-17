@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+
+<robot name="m1013mobile" xmlns:xacro="http://www.ros.org/wiki/xacro">
+	<xacro:include filename="$(find dsr_description)/config/macro.decorations.xacro" />
+	<xacro:include filename="$(find dsr_description)/config/macro.wheel.xacro" />
+	<xacro:include filename="$(find dsr_description)/xacro/macro.m1013.white.xacro" />
+	<xacro:property name="M_PI" value="3.14159" />
+	<!-- Base Size -->
+	<xacro:property name="base_x_size" value="0.98740000" />
+	<xacro:property name="base_y_size" value="0.57090000" />
+	<xacro:property name="base_z_size" value="0.24750000" />
+	<!-- Wheel Mounting Positions -->
+	<xacro:property name="wheelbase" value="0.5120" />
+	<xacro:property name="track" value="0.5708" />
+	<xacro:property name="wheel_vertical_offset" value="0.03282" />
+	<!-- Wheel Properties -->
+	<xacro:property name="wheel_length" value="0.1143" />
+	<xacro:property name="wheel_radius" value="0.1651" />
+	<xacro:macro name="m1013mobile" params="namespace">
+		<!-- Base link is the center of the robot's bottom plate -->
+		<link name="base_link">
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="package://dsr_description/meshes/mobile/base_link.dae" />
+				</geometry>
+			</visual>
+			<collision>
+				<origin xyz="0 0 ${base_z_size/4}" rpy="0 0 0" />
+				<geometry>
+					<box size="${base_x_size} ${base_y_size} ${base_z_size/2}" />
+				</geometry>
+			</collision>
+			<collision>
+				<origin xyz="0 0 ${base_z_size*3/4}" rpy="0 0 0" />
+				<geometry>
+					<box size="${base_x_size*4/5} ${base_y_size} ${base_z_size/2}" />
+				</geometry>
+			</collision>
+		</link>
+		<!-- Base footprint is on the ground under the robot -->
+		<link name="base_footprint" />
+		<joint name="base_footprint_joint" type="fixed">
+			<origin xyz="0 0 ${wheel_vertical_offset - wheel_radius}" rpy="0 0 0" />
+			<parent link="base_link" />
+			<child link="base_footprint" />
+		</joint>
+		<!-- Interial link stores the robot's inertial information -->
+		<link name="inertial_link">
+			<inertial>
+				<mass value="1346.034" />
+				<origin xyz="-0.00065 -0.085 0.062" />
+				<inertia ixx="0.6022" ixy="-0.02364" ixz="-0.1197" iyy="1.7386" iyz="-0.001544" izz="2.0296" />
+			</inertial>
+		</link>
+		<joint name="inertial_joint" type="fixed">
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<parent link="base_link" />
+			<child link="inertial_link" />
+		</joint>
+		<!-- IMU Link is the standard mounting position for the UM6 IMU.-->
+		<!-- Can be modified with environment variables in /etc/ros/setup.bash -->
+		<link name="imu_link" />
+		<joint name="imu_joint" type="fixed">
+			<origin xyz="$(optenv MOBILE_IMU_XYZ 0.19 0 0.149)" rpy="$(optenv MOBILE_IMU_RPY 0 -1.5708 3.1416)" />
+			<parent link="base_link" />
+			<child link="imu_link" />
+		</joint>
+		<gazebo reference="imu_link">
+		</gazebo>
+		<!-- Mokbile wheel macros -->
+		<xacro:mobile_wheel wheel_prefix="front_left">
+			<origin xyz="${wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+		</xacro:mobile_wheel>
+		<xacro:mobile_wheel wheel_prefix="front_right">
+			<origin xyz="${wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+		</xacro:mobile_wheel>
+		<xacro:mobile_wheel wheel_prefix="rear_left">
+			<origin xyz="${-wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+		</xacro:mobile_wheel>
+		<xacro:mobile_wheel wheel_prefix="rear_right">
+			<origin xyz="${-wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+		</xacro:mobile_wheel>
+
+		<xacro:mobile_decorate />
+
+		<xacro:m1013 namespace="${namespace}" />
+		<joint name="dsr_arm_base" type="fixed">
+			<parent link="top_plate_link" />
+			<child link="base_0" />
+			<origin xyz="0 0 0.0065" rpy="0.0 0.0 -1.57" />
+		</joint>
+	</xacro:macro>
+</robot>

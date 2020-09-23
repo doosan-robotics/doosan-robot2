@@ -30,7 +30,7 @@ def generate_launch_description():
     # Component yaml files are grouped in separate namespaces
     robot_description_config = load_file('dsr_description2', 'urdf/m1013.urdf')
     robot_description = {'robot_description' : robot_description_config}
-
+    print(get_package_share_directory('dsr_description2'))
     # RViz
     rviz_config_file = get_package_share_directory('dsr_description2') + "/rviz/default.rviz"
     rviz_node = Node(package='rviz2',

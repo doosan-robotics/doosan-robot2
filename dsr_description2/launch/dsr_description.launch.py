@@ -41,7 +41,7 @@ def generate_launch_description():
     
     #model11 = LaunchConfiguration('model').variable_name()
     print(1111111111111111111111111111111)
-    print(LaunchConfiguration('model').variable_name())
+    print(LaunchConfiguration('model'))
     
     # Component yaml files are grouped in separate namespaces
     robot_description_config = load_file('dsr_description2', 'urdf/' + 'm1013' + '.urdf')

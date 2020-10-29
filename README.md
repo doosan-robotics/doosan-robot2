@@ -7,14 +7,14 @@
 __Not Yet__
 
 # *build* 
-##### *Doosan Robot ROS Package is implemented at ROS-Kinetic.*
-    ### We recoomand the /home/<user_home>/catkin_ws/src
-    cd ~/catkin_ws/src
-    git clone https://github.com/doosan-robotics/doosan-robot
-    rosdep install --from-paths doosan-robot --ignore-src --rosdistro kinetic -r -y
-    cd ~/catkin_ws
-    catkin_make
-    source ./devel/setup.bash
+##### *Doosan Robot ROS2 Package is implemented at ROS2-Foxy.*
+    ### We recommand the /home/<user_home>/ros2_ws/src
+    cd ~/ros2_ws/src
+    git clone https://github.com/doosan-robotics/doosan-robot2
+    rosdep install --from-paths doosan-robot --ignore-src --rosdistro foxy -r -y
+    cd ~/ros2_ws
+    colcon build
+    . install/setup.bash
 
 #### package list
     sudo apt-get install ros-kinetic-rqt* ros-kinetic-moveit* ros-kinetic-industrial-core ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller ros-kinetic-effort-controllers ros-kinetic-position-controllers ros-kinetic-ros-controllers ros-kinetic-ros-control ros-kinetic-serial

@@ -4,7 +4,8 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![support level: community](https://img.shields.io/badge/support%20level-community-lightgray.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
 # *overview*
-    It currently contains packages that provide nodes for communication with Doosan's collaborative robot controllers, URDF models for various robot arms
+    It currently contains packages that provide nodes for 
+    communication with Doosan's collaborative robot controllers in ROS2(Foxy) 
 __Not Yet__
 
 # *build* 

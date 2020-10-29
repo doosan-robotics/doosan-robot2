@@ -8,31 +8,37 @@ __Not Yet__
 
 # *build* 
 ##### *Doosan Robot ROS2 Package is implemented at ROS2-Foxy.*
+    ### We assume that you have installed the ros-foxy-desktop package using the apt-get command.
     ### We recommand the /home/<user_home>/ros2_ws/src
     cd ~/ros2_ws/src
-    git clone https://github.com/doosan-robotics/doosan-robot2
-    rosdep install --from-paths doosan-robot --ignore-src --rosdistro foxy -r -y
+    git clone https://github.com/doosan-robotics/doosan-robot2.git
+    git clone https://github.com/ros-controls/ros2_control.git
+    cd ros2_control/
+    git reset --hard b9ea092b47a874e51cf73dfdee9b1aa0c2b8afa8
+    cd ~/ros2_ws/src
+    git clone https://github.com/ros-controls/ros2_controllers.git
+    cd ros2_controllers/
+    git reset --hard d52902538a970e792ecc604416e22ef90a57f29e
     cd ~/ros2_ws
+    rosdep update
+    rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
     colcon build
     . install/setup.bash
 
 #### package list
-    sudo apt-get install ros-kinetic-rqt* ros-kinetic-moveit* ros-kinetic-industrial-core ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller ros-kinetic-effort-controllers ros-kinetic-position-controllers ros-kinetic-ros-controllers ros-kinetic-ros-control ros-kinetic-serial
-    
-__packages for mobile robot__
-
-    sudo apt-get install ros-kinetic-lms1xx ros-kinetic-interactive-marker-twist-server ros-kinetic-twist-mux ros-kinetic-imu-tools ros-kinetic-controller-manager ros-kinetic-robot-localization
-
+    sudo apt-get install ros-foxy-control-msgs ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-joint-state-publisher-gui
 
 # *usage* <a id="chapter-3"></a>
 #### Operation Mode
 ##### Virtual Mode
-If you are driveing without a real robot, use __virtual mode__   
-When ROS launches in virtual mode, the emulator(DRCF) runs automatically.
-> (DRCF) location: doosan-robot/common/bin/ DRCF
+If you are driveing the package without a real robot, use __virtual mode__   
+> (DRCF) location: doosan-robot2/common/bin/ DRCF
+
+###### Excute DRCF Emulator
+> 
 
 ```bash
-roslaunch dsr_launcher single_robot_gazebo.launch mode:=virtual
+ros2 launch dsr_launcher2 single_robot_rviz.launch.py 
 ```
 _One emulator is required for each robot_
 

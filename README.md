@@ -45,7 +45,7 @@ You can execute the Control Node by using the command below.
 ```bash
 ros2 launch dsr_launcher2 single_robot_rviz.launch.py model:=a0912 color:=blue
 ```
-https://user-images.githubusercontent.com/47092672/97539997-4d10ba80-1a06-11eb-9aba-db0e6e9f65d2.png
+<img src="https://user-images.githubusercontent.com/47092672/97539997-4d10ba80-1a06-11eb-9aba-db0e6e9f65d2.png" width="70%">
 
 ##### Real Mode
 Use __real mode__ to drive a real robot   

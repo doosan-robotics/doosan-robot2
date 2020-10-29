@@ -1,3 +1,4 @@
+
 # [Doosan Robotics](http://www.doosanrobotics.com/kr/)
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -34,16 +35,19 @@ __Not Yet__
 If you are driveing the package without a real robot, use __virtual mode__   
 > (DRCF) location: doosan-robot2/common/bin/ DRCF
 
-###### Excute DRCF Emulator
-> 
-
+Run the DRCF emulator by entering the command below.
+The DRCF emulator runs only with __root__ permission.
+```bash
+cd ~/ros2_ws/doosan-robot2/common/bin
+./DRCF64
+``` 
+You can execute the Control Node by using the command below.
 ```bash
 ros2 launch dsr_launcher2 single_robot_rviz.launch.py 
 ```
-_One emulator is required for each robot_
 
 ##### Real Mode
 Use __real mode__ to drive a real robot   
 The default IP of the robot controller is _192.168.127.100_ and the port is _12345_.
 ```bash
-roslaunch dsr_launcher single_robot_gazebo.launch mode:=real host:=192.168.127.100 port:=12345
+ros2 launch dsr_launcher2 single_robot_rviz.launch.py mode:=real host:=192.168.127.100 port:=12345

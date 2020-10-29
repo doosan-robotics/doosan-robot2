@@ -1,0 +1,58 @@
+<robot>
+    <body axis="0"/>
+    <body axis="1"/>            
+    <body axis="2">
+        <bv type="capsule">
+            <a.x>0.0000</a.x>
+            <a.y>10.0000</a.y>
+            <a.z>175.0000</a.z>
+            <b.x>0.0000</b.x>
+            <b.y>225.0000</b.y>
+            <b.z>175.0000</b.z>
+            <r>110.0000</r>
+        </bv>
+        <bv type="capsule">
+            <a.x>0.0000</a.x>
+            <a.y>225.0000</a.y>
+            <a.z>260.0000</a.z>
+            <b.x>0.0000</b.x>
+            <b.y>225.0000</b.y>
+            <b.z>560.0000</b.z>
+            <r>90.0000</r>
+        </bv>
+    </body>
+    <body axis="3">
+        <bv type="capsule">
+            <a.x>0.0000</a.x>
+            <a.y>40.0000</a.y>
+            <a.z>525.0000</a.z>
+            <b.x>0.0000</b.x>
+            <b.y>40.0000</b.y>
+            <b.z>650.0000</b.z>
+            <r>65.0000</r>
+        </bv>
+    </body>
+    <body axis="4">
+        <bv type="capsule">
+            <a.x>0.0000</a.x>
+            <a.y>65.0000</a.y>
+            <a.z>700.0000</a.z>
+            <b.x>0.0000</b.x>
+            <b.y>230.0000</b.y>
+            <b.z>930.0000</b.z>
+            <r>55.0000</r>
+        </bv>
+    </body>
+    <body axis="5">
+        <bv type="capsule">
+            <a.x>0.0000</a.x>
+            <a.y>35.0000</a.y>
+            <a.z>870.0000</a.z>
+            <b.x>0.0000</b.x>
+            <b.y>35.0000</b.y>
+            <b.z>1010.0000</b.z>
+            <r>55.0000</r>
+        </bv>
+    </body>
+    <body axis="6"/>
+</robot>

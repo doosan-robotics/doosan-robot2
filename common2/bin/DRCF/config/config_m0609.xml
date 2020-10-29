@@ -1,0 +1,20 @@
+<!-- DRCF configuraton property-->
+<config>
+  <xmluse>0</xmluse>
+  <robot>
+    <!-- write out the file name for robot model-->
+    <!-- model>config/M3/Cover/m1310_Cover.xml</model-->
+    <model>config/MF/m0609.xml</model>
+	
+  </robot>
+  
+  <group>
+    <!--select the robot of the number  -->
+    <!--member>config/M2/Group/DV1131000.xml</member-->
+    <member>config/MF/Group/m0609/DV3060900.xml</member>
+	
+  </group>
+
+  <bv>config/BV/MF_M0609.xml</bv>  
+  
+</config>

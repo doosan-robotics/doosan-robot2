@@ -3,15 +3,16 @@
 
   <xacro:arg name="color"   default="white"/>
   <xacro:arg name="gripper" default="none"/>
+  <xacro:arg name="namespace" default=""/>
 
 
   <xacro:property name="cr" value="$(arg color)"/>
   <xacro:property name="gr" value="$(arg gripper)"/>
   <xacro:if value="${cr == 'white'}">
-     <xacro:include filename="$(find dsr_description)/xacro/macro.m0609.white.xacro" />
+     <xacro:include filename="$(find dsr_description2)/xacro/macro.m0609.white.xacro" />
   </xacro:if>
   <xacro:if value="${cr == 'blue'}">
-     <xacro:include filename="$(find dsr_description)/xacro/macro.m0609.blue.xacro" />
+     <xacro:include filename="$(find dsr_description2)/xacro/macro.m0609.blue.xacro" />
   </xacro:if>
 
   <xacro:m0609 namespace="$(arg namespace)"/>
@@ -21,7 +22,7 @@
 
 
   <xacro:if value="${gr == 'robotiq_2f'}">
-     <xacro:include filename="$(find dsr_description)/xacro/robotiq_2f.urdf.xacro" />
+     <xacro:include filename="$(find dsr_description2)/xacro/robotiq_2f.urdf.xacro" />
      
   </xacro:if>
 
@@ -33,4 +34,3 @@
   </joint>
 
 </robot>
-

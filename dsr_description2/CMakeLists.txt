@@ -15,6 +15,6 @@ find_package(ament_cmake REQUIRED)
 
 ament_package()
 
-install(DIRECTORY meshes urdf DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY meshes urdf xacro config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})

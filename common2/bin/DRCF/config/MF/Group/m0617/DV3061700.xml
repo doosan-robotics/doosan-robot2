@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<param>
+	<unit>
+		<Joint>
+			<offset>
+                <link num="1">0</link>
+                <link num="2">0</link>
+                <link num="3">0</link>
+                <link num="4">0</link>
+                <link num="5">0</link>
+                <link num="6">0</link>
+                <link num="7">0</link>
+            </offset>
+        </Joint>
+		<DHPara>
+		<!-- 단위: m -->
+			<offset>
+                <link num="1">0</link>
+                <link num="2">0</link>
+                <link num="3">0</link>
+                <link num="4">0</link>
+                <link num="5">0</link>
+                <link num="6">0</link>
+                <link num="7">0</link>
+            </offset>
+        </DHPara>
+		<Jts>
+			<scale>
+                <link num="1">1</link>
+                <link num="2">1</link>
+                <link num="3">1</link>
+                <link num="4">1</link>
+                <link num="5">1</link>
+                <link num="6">1</link>
+                <link num="7">0</link>
+            </scale>
+			<offset>
+                <link num="1">0</link>
+                <link num="2">0</link>
+                <link num="3">0</link>
+                <link num="4">0</link>
+                <link num="5">0</link>
+                <link num="6">0</link>
+                <link num="7">0</link>
+            </offset>
+        </Jts>
+        <Fts>
+            <install>
+                <axis>0</axis>
+            </install>
+            <offset>
+                <axis num="1">0</axis>
+                <axis num="2">1</axis>
+                <axis num="3">2</axis>
+                <axis num="4">3</axis>
+                <axis num="5">4</axis>
+                <axis num="6">5</axis>
+            </offset>
+        </Fts>
+        <Friction>
+            <positive>
+                <link num="1">
+                    <coeff num="1">0.0</coeff>
+                    <coeff num="2">0.1</coeff>
+                    <coeff num="3">0.2</coeff>
+                    <coeff num="4">0.3</coeff>
+                </link>
+                <link num="2">
+                    <coeff num="1">0.10</coeff>
+                    <coeff num="2">0.11</coeff>
+                    <coeff num="3">0.12</coeff>
+                    <coeff num="4">0.13</coeff>
+                </link>
+                <link num="3">
+                    <coeff num="1">0.20</coeff>
+                    <coeff num="2">0.21</coeff>
+                    <coeff num="3">0.22</coeff>
+                    <coeff num="4">0.23</coeff>
+                </link>
+                <link num="4">
+                    <coeff num="1">0.30</coeff>
+                    <coeff num="2">0.31</coeff>
+                    <coeff num="3">0.32</coeff>
+                    <coeff num="4">0.33</coeff>
+                </link>
+                <link num="5">
+                    <coeff num="1">0.40</coeff>
+                    <coeff num="2">0.41</coeff>
+                    <coeff num="3">0.42</coeff>
+                    <coeff num="4">0.43</coeff>
+                </link>
+                <link num="6">
+                    <coeff num="1">0.50</coeff>
+                    <coeff num="2">0.51</coeff>
+                    <coeff num="3">0.52</coeff>
+                    <coeff num="4">0.53</coeff>
+                </link>
+            </positive>
+            <negative>
+                <link num="1">
+                    <coeff num="1">0.0</coeff>
+                    <coeff num="2">-0.1</coeff>
+                    <coeff num="3">-0.2</coeff>
+                    <coeff num="4">-0.3</coeff>
+                </link>
+                <link num="2">
+                    <coeff num="1">-0.10</coeff>
+                    <coeff num="2">-0.11</coeff>
+                    <coeff num="3">-0.12</coeff>
+                    <coeff num="4">-0.13</coeff>
+                </link>
+                <link num="3">
+                    <coeff num="1">-0.20</coeff>
+                    <coeff num="2">-0.21</coeff>
+                    <coeff num="3">-0.22</coeff>
+                    <coeff num="4">-0.23</coeff>
+                </link>
+                <link num="4">
+                    <coeff num="1">-0.30</coeff>
+                    <coeff num="2">-0.31</coeff>
+                    <coeff num="3">-0.32</coeff>
+                    <coeff num="4">-0.33</coeff>
+                </link>
+                <link num="5">
+                    <coeff num="1">-0.40</coeff>
+                    <coeff num="2">-0.41</coeff>
+                    <coeff num="3">-0.42</coeff>
+                    <coeff num="4">-0.43</coeff>
+                </link>
+                <link num="6">
+                    <coeff num="1">-0.50</coeff>
+                    <coeff num="2">-0.51</coeff>
+                    <coeff num="3">-0.52</coeff>
+                    <coeff num="4">-0.53</coeff>
+                </link>
+            </negative>
+        </Friction>
+    </unit>
+</param>

@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.5)
+project(common2)
+
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+find_package(ament_cmake REQUIRED)
+
+ament_package()
+
+install(PROGRAMS 
+    bin/DRCF/DRCF64 bin/DRCF/run_drcf.sh
+    #ROS2 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    DESTINATION bin/${PROJECT_NAME}   
+)
+
+install(DIRECTORY
+    imp bin/DRCF/config 
+    #ROS2 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    DESTINATION bin/${PROJECT_NAME}   
+)

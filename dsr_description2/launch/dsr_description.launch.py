@@ -3,9 +3,10 @@ import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, Command
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
+from launch.launch_context import LaunchContext
 from typing import List
 
 def load_file(package_name, file_path):
@@ -34,27 +35,24 @@ ARGUMENTS = [
         'model',
         default_value='m1013',
         description='Robot Model'
+    ),
+    DeclareLaunchArgument(
+        'color',
+        default_value='white',
+        description='Robot Color'
     )
     ]	
 
 def generate_launch_description():
     
-    #model11 = LaunchConfiguration('model').variable_name()
-    print(1111111111111111111111111111111)
-    print(LaunchConfiguration('model'))
-    
-    # Component yaml files are grouped in separate namespaces
-    robot_description_config = load_file('dsr_description2', 'urdf/' + 'm1013' + '.urdf')
-    robot_description = {'robot_description' : robot_description_config}
-
+    xacro_path = os.path.join( get_package_share_directory('dsr_description2'), 'xacro')
     # RViz
     rviz_config_file = get_package_share_directory('dsr_description2') + "/rviz/default.rviz"
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
                      name='rviz2',
                      output='log',
-                     arguments=['-d', rviz_config_file],
-                     parameters=[robot_description])
+                     arguments=['-d', rviz_config_file])
 
     # Static TF
     static_tf = Node(package='tf2_ros',
@@ -68,7 +66,9 @@ def generate_launch_description():
                                  executable='robot_state_publisher',
                                  name='robot_state_publisher',
                                  output='both',
-                                 parameters=[robot_description])
+                                 parameters=[{
+                                    'robot_description': Command(['xacro', ' ', xacro_path, '/', LaunchConfiguration('model'), '.urdf.xacro color:=', LaunchConfiguration('color')])           
+                                 }])
 
     joint_state_publisher_gui = Node(package='joint_state_publisher_gui',
                                     executable='joint_state_publisher_gui',

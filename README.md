@@ -54,7 +54,7 @@ $ sudo ./DRCF64
 ##### Run dsr_control2 node 
 You can execute the Control Node by using the command below.
 ```bash
-$ ros2 launch dsr_launcher2 single_robot_rviz.launch.py model:=a0912 color:=blue
+$ ros2 launch dsr_launcher2 single_robot_rviz2.launch.py model:=a0912 color:=blue
 ```
 ##### Run the example scripts
 The robot can be driven by using the example scripts included in the dsr_example2 package.

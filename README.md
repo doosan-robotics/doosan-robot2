@@ -55,8 +55,8 @@ You can execute the Control Node by using the command below.
 ```bash
 ros2 launch dsr_launcher2 single_robot_rviz.launch.py model:=a0912 color:=blue
 ```
-##### Run the example script
-The robot can be driven by using the example script included in the dsr_example2 package.
+##### Run the example scripts
+The robot can be driven by using the example scripts included in the dsr_example2 package.
 Check that the controller and robot are connected normally, and enter the command below.
 ```bash
 ros2 run dsr_example2_py dsr_service_motion_basic
@@ -72,10 +72,10 @@ The default IP of the robot controller is _192.168.127.100_ and the port is _123
 ros2 launch dsr_launcher2 single_robot_rviz.launch.py mode:=real host:=192.168.127.100 port:=12345
 ```
 
-##### Run the example script
-The robot can be driven by using the example script included in the dsr_example2 package.
+##### Run the example scripts
+The robot can be driven by using the example scripts included in the dsr_example2 package.
 Check that the controller and robot are connected normally, and enter the command below.
 ```bash
-ros2 run dsr_example2_py dsr_service_motion_basic
+ros2 run dsr_example2_py dsr_service_motion_simple
 ```
 <img src="https://user-images.githubusercontent.com/47092672/97654894-3f5f4180-1aa7-11eb-83f0-90eb071d1f60.gif" width="70%">

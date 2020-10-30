@@ -7,7 +7,7 @@
   <maintainer email="ros.robotics@doosan.com">Doosan Robotics</maintainer>
   <license>TODO: License declaration</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
+  <!--buildtool_depend>ament_python</buildtool_depend-->
 
   <depend>rclpy</depend>
   <depend>dsr_msgs2</depend>

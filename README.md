@@ -60,7 +60,7 @@ $ ros2 launch dsr_launcher2 single_robot_rviz2.launch.py model:=a0912 color:=blu
 The robot can be driven by using the example scripts included in the dsr_example2 package.
 Check that the controller and robot are connected normally, and enter the command below.
 ```bash
-$ ros2 run dsr_example2_py dsr_service_motion_basic
+$ ros2 run dsr_example2_py dsr_service_motion_simple
 ```
 
 ### Real Mode

@@ -39,8 +39,7 @@ ros2 launch dsr_launcher2 dsr_joint_state_pub.launch.py
 ``` 
 <img src="https://user-images.githubusercontent.com/47092672/97652654-40da3b00-1aa2-11eb-8621-2a36e3159de0.png" width="70%">
 
-#### Operation Mode
-##### Virtual Mode
+#### Virtual Mode
 If you are driveing the package without a real robot, use __virtual mode__   
 > (DRCF) location: doosan-robot2/common/bin/ DRCF
 Run the DRCF emulator by entering the command below.
@@ -56,7 +55,7 @@ You can execute the Control Node by using the command below.
 ros2 launch dsr_launcher2 single_robot_rviz.launch.py model:=a0912 color:=blue
 ```
 
-##### Real Mode
+#### Real Mode
 Use __real mode__ to drive a real robot   
 The default IP of the robot controller is _192.168.127.100_ and the port is _12345_.
 ```bash

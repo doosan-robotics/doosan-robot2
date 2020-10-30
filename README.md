@@ -46,7 +46,7 @@ If you are driveing the package without a real robot, use __virtual mode__
 Run the *DRCF emulator* by entering the command below.
 The *DRCF emulator* runs only with __root__ permission.
 ```bash
-$ cd ~/ros2_ws/doosan-robot2/common/bin/DRCF
+$ cd ~/ros2_ws/src/doosan-robot2/common/bin/DRCF
 $ sudo ./DRCF64
 ``` 
 <img src="https://user-images.githubusercontent.com/47092672/97665930-f23b9980-1abf-11eb-95bd-867ce007970d.PNG" width="50%">

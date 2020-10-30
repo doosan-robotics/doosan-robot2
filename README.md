@@ -31,8 +31,7 @@ __Not Yet__
     sudo apt-get install ros-foxy-control-msgs ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-joint-state-publisher-gui
 
 # *usage* <a id="chapter-3"></a>
-#### Stand Alone Mode
-##### Joint State Publisher Gui
+#### Joint State Publish
 It can be run independently without a controller.
 Using the robot model and the joint_state_publisher_gui package, you can see the robot moving on Rviz.
 ```bash

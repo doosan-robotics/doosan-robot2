@@ -46,7 +46,7 @@ If you are driveing the package without a real robot, use __virtual mode__
 Run the *DRCF emulator* by entering the command below.
 The *DRCF emulator* runs only with __root__ permission.
 ```bash
-$ cd ~/ros2_ws/doosan-robot2/common/bin
+$ cd ~/ros2_ws/doosan-robot2/common/bin/DRCF
 $ sudo ./DRCF64
 ``` 
 <img src="https://user-images.githubusercontent.com/47092672/97652519-e9d46600-1aa1-11eb-9896-ecaee8a0b85f.PNG" width="70%">
@@ -63,14 +63,13 @@ Check that the controller and robot are connected normally, and enter the comman
 $ ros2 run dsr_example2_py dsr_service_motion_basic
 ```
 
-
 ### Real Mode
 Use __real mode__ to drive a real robot   
 The default IP of the robot controller is _192.168.127.100_ and the port is _12345_.
 
 ##### Run dsr_control2 node 
 ```bash
-$ ros2 launch dsr_launcher2 single_robot_rviz.launch.py mode:=real host:=192.168.127.100 port:=12345
+$ ros2 launch dsr_launcher2 single_robot_rviz2.launch.py mode:=real host:=192.168.127.100 port:=12345
 ```
 
 ##### Run the example scripts

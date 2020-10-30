@@ -35,7 +35,7 @@
 It can be run independently without a controller.
 Using the robot model and the `joint_state_publisher_gui` package, you can see the robot moving on Rviz.
 ```bash
-$ ros2 launch dsr_launcher2 dsr_joint_state_pub.launch.py
+$ ros2 launch dsr_launcher2 dsr_joint_state_pub.launch.py model:=a0912 color:=blue
 ``` 
 <img src="https://user-images.githubusercontent.com/47092672/97652654-40da3b00-1aa2-11eb-8621-2a36e3159de0.png" width="70%">
 

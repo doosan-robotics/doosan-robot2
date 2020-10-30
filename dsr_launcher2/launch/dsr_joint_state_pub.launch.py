@@ -80,24 +80,4 @@ def generate_launch_description():
                                     executable='joint_state_publisher_gui',
                                     name='joint_state_publisher_gui')
 
-    # dsr_control2 
-    dsr_control2 = Node(package='dsr_control2', 
-                        executable='dsr_control_node2', 
-                        name='dsr_control_node2', 
-                        output='screen',
-                        parameters=[
-		                    {"name":    LaunchConfiguration('name')  }, 
-		                    {"rate":    100         },
-                            {"standby": 5000        },
-		                    {"command": True        },
-		                    {"host":    LaunchConfiguration('host')  },
-		                    {"port":    LaunchConfiguration('port')  },
-		                    {"mode":    LaunchConfiguration('mode')  },
-		                    {"model":   LaunchConfiguration('model') },
-                            {"gripper": "none"      },
-	                        {"mobile":  "none"      },
-                            #parameters_file_path       # 파라미터 설정을 동일이름으로 launch 파일과 yaml 파일에서 할 경우 yaml 파일로 셋팅된다.    
-                        ]
-                    )    
-    #return LaunchDescription([ static_tf, robot_state_publisher, joint_state_publisher_gui, rviz_node])
-    return LaunchDescription(args + [ static_tf, robot_state_publisher, dsr_control2, rviz_node])
+    return LaunchDescription([ static_tf, robot_state_publisher, joint_state_publisher_gui, rviz_node])

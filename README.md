@@ -49,7 +49,7 @@ The *DRCF emulator* runs only with __root__ permission.
 $ cd ~/ros2_ws/doosan-robot2/common/bin/DRCF
 $ sudo ./DRCF64
 ``` 
-<img src="https://user-images.githubusercontent.com/47092672/97652519-e9d46600-1aa1-11eb-9896-ecaee8a0b85f.PNG" width="70%">
+<img src="https://user-images.githubusercontent.com/47092672/97665930-f23b9980-1abf-11eb-95bd-867ce007970d.PNG" width="70%">
 
 ##### Run dsr_control2 node 
 You can execute the Control Node by using the command below.

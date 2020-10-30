@@ -7,7 +7,7 @@
     
     This package provides the function to control all models of Doosan robots in the ROS2(Foxy) environment.
     
-    ※ Currently, Currently, ROS2 related packages are being updated rapidly. 
+    ※ Currently, ROS2 related packages are being updated rapidly. 
        Doosan packages will also be updated from time to time and features will be upgraded.
 
 # *build* 

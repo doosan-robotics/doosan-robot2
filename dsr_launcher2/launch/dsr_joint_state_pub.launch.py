@@ -80,4 +80,4 @@ def generate_launch_description():
                                     executable='joint_state_publisher_gui',
                                     name='joint_state_publisher_gui')
 
-    return LaunchDescription([ static_tf, robot_state_publisher, joint_state_publisher_gui, rviz_node])
+    return LaunchDescription(args + [ static_tf, robot_state_publisher, joint_state_publisher_gui, rviz_node])

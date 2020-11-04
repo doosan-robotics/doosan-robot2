@@ -56,6 +56,7 @@ int thread_robot_control(rclcpp::Node::SharedPtr g_node, int nPubRate)
     // "ros_controllers" is the resource index from where to look for controllers
     // "ros_controllers::JointStateController" is the class we want to load
     // "my_robot_joint_state_controller" is the name for the node to spawn
+#ifdef _OLD_ROS2_CONTROL_
     cm.load_controller(
         "dsr_joint_publisher", //"my_robot_joint_state_controller",
         "joint_state_controller/JointStateController");
@@ -79,6 +80,18 @@ int thread_robot_control(rclcpp::Node::SharedPtr g_node, int nPubRate)
       RCLCPP_ERROR(rclcpp::get_logger("dsr_control_node2"), "at least one controller failed to activate");
       return -1;
     }
+#else
+
+    auto controller = cm.load_controller(
+        "dsr_joint_publisher", //"my_robot_joint_state_controller",
+        "joint_state_controller/JointStateController");
+
+    //cm.push_back(controller);
+
+    controller->get_lifecycle_node()->configure();
+    controller->get_lifecycle_node()->activate();    
+
+#endif
 
     RCLCPP_INFO(rclcpp::get_logger("dsr_control_node2"),"controller_manager is updating!");
 

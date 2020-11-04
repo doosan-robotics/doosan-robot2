@@ -47,8 +47,12 @@
 #include <array>
 #include <algorithm>  // std::copy
 
-#include <hardware_interface/joint_command_handle.hpp>
-#include <hardware_interface/joint_state_handle.hpp>
+#ifdef _OLD_ROS2_CONTROL_
+    #include <hardware_interface/joint_command_handle.hpp>
+    #include <hardware_interface/joint_state_handle.hpp>
+#else 
+    #include "hardware_interface/joint_handle.hpp"
+#endif
 
 #include <hardware_interface/robot_hardware.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>  //add
@@ -515,6 +519,15 @@ namespace dsr_control2{
         std::string GetRobotModel();
 
     private:
+        std::vector<std::string> joint_names = {
+          "joint1",
+          "joint2",
+          "joint3",
+          "joint4",
+          "joint5",
+          "joint6"
+        };
+
         int  m_nVersionDRCF;
         bool m_bIsEmulatorMode; 
 
@@ -582,10 +595,20 @@ namespace dsr_control2{
 //ROS2        hardware_interface::JointStateInterface jnt_state_interface;
 //ROS2        hardware_interface::PositionJointInterface jnt_pos_interface;
 //ROS2        hardware_interface::VelocityJointInterface velocity_joint_interface_;
+#ifdef _OLD_ROS2_CONTROL_
         std::vector<hardware_interface::JointStateHandle> joint_state_handles_;
         std::vector<hardware_interface::JointCommandHandle> joint_command_handles_;
         std::vector<hardware_interface::OperationModeHandle> joint_mode_handles_;
+#else
+        std::vector<hardware_interface::JointHandle> joint_state_handles_;
+        std::vector<hardware_interface::JointHandle> joint_velocity_handles_;
+        std::vector<hardware_interface::JointHandle> joint_effort_handles_;
 
+        std::vector<hardware_interface::JointHandle> joint_command_handles_;
+
+        std::vector<hardware_interface::OperationModeHandle> joint_opmodes_;
+        std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
+#endif
         std::array<float, NUM_JOINT> m_fCmd_;
         bool m_bCommand_;
         struct Joint{

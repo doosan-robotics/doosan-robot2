@@ -18,12 +18,7 @@
     $ cd ~/ros2_ws/src
     $ git clone https://github.com/doosan-robotics/doosan-robot2.git
     $ git clone https://github.com/ros-controls/ros2_control.git
-    $ cd ros2_control/
-    $ git reset --hard b9ea092b47a874e51cf73dfdee9b1aa0c2b8afa8
-    $ cd ~/ros2_ws/src
     $ git clone https://github.com/ros-controls/ros2_controllers.git
-    $ cd ros2_controllers/
-    $ git reset --hard d52902538a970e792ecc604416e22ef90a57f29e
     $ cd ~/ros2_ws
     $ rosdep update
     $ rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y

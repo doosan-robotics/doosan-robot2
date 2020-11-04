@@ -809,6 +809,7 @@ namespace dsr_control2{
     hardware_interface::return_type DRHWInterface::init()
     {
         RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[dsr_hw_interface2] init() ==> setup callback fucntion");
+#if _OLD_ROS2_CONTROL
 
         auto joint_names = {
           "joint1",
@@ -842,6 +843,18 @@ namespace dsr_control2{
             }
             ++i;
         }
+#else
+
+        size_t i = 0;
+        for (auto & joint_name : joint_names)
+        {
+            printf("joint_name = %s",joint_name);
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"joint_name = %s",joint_name);
+            register_joint(joint_name, "position", m_joints[i].pos);
+            ++i;
+        }
+
+#endif 
 
 //-----------------------------------------------------------------------------------------------------
         int nServerPort = 12345;
@@ -943,6 +956,7 @@ namespace dsr_control2{
     {   
         ///RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::read()");
 
+#if _OLD_ROS2_CONTROL
         //ROS2 std_msgs::Float64MultiArray msg;
         std_msgs::msg::Float64MultiArray msg;
 
@@ -955,7 +969,21 @@ namespace dsr_control2{
             m_joints[i].pos = deg2rad(pose->_fPosition[i]);	//update pos to '/joint_states'
             msg.data.push_back(m_joints[i].pos);
         }
-       
+#else      
+        LPROBOT_POSE pose = Drfl.GetCurrentPose();
+
+        size_t i = 0;
+        for (auto & joint_name : joint_names)
+        {
+            m_joints[i].pos = deg2rad(pose->_fPosition[i]);
+
+            auto joint_handle = std::make_shared<hardware_interface::JointHandle>(joint_name, "position");
+            get_joint_handle(*joint_handle);
+            joint_handle->set_value(m_joints[i].pos); 
+
+            ++i;
+        }
+#endif      
 //TODO        if(m_strRobotGripper != "none"){
 //TODO            msg.data.push_back(m_joints[6].pos);
 //TODO        }

@@ -91,4 +91,4 @@ $ ros2 launch dsr_launcher2 single_robot_rviz.launch.py
 ```bash
 $ ros2 launch dsr_launcher2 single_robot_gazebo.launch.py
 ```
-<img src="https://user-images.githubusercontent.com/47092672/99231484-060f2b80-2834-11eb-8bd2-26e270d47587.gif" width="70%">
+<img src="https://user-images.githubusercontent.com/47092672/99232226-fe9c5200-2834-11eb-8719-f87cc56d55c7.gif" width="70%">

@@ -20,6 +20,7 @@
     $ git clone https://github.com/doosan-robotics/doosan-robot2.git
     $ git clone https://github.com/ros-controls/ros2_control.git
     $ git clone https://github.com/ros-controls/ros2_controllers.git
+    $ git clone https://github.com/ros-simulation/gazebo_ros2_control.git
     $ cd ~/ros2_ws
     $ rosdep update
     $ rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y

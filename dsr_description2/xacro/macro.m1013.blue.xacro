@@ -3,9 +3,9 @@
 <robot name="m1013" xmlns:xacro="http://www.ros.org/wiki/xacro">
 	<xacro:include filename="$(find dsr_description2)/config/macro.gazebo.xacro" />
 	<xacro:include filename="$(find dsr_description2)/config/macro.transmission.xacro" />
-	<xacro:include filename="$(find dsr_description2)/config/macro.materials.xacro" />
+	<!--xacro:include filename="$(find dsr_description2)/config/macro.materials.xacro" /-->
 	<xacro:macro name="m1013" params="namespace">
-		<xacro:dsr_materials />
+		<!--xacro:dsr_materials /-->
 		<link name="base_0">
 			<inertial>
 				<mass value="3.722" />
@@ -15,7 +15,7 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_0_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_0_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -42,7 +42,7 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_1_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_1_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -70,19 +70,19 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_2_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_2_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_2_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_2_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_2_2.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_2_2.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -101,12 +101,12 @@
 				<origin xyz="6e-06 0.07917 0.781807" />
 				<inertia ixx="0.012" ixy="-4.38e-06" ixz="-1.2e-06" iyy="0.008" iyz="0.002" izz="0.011" />
 			</inertial>
-			<visual>
+        <visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_3_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_3_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
-			</visual>
+	    </visual>
 		</link>
 		<!-- joint4 -->
 		<joint name="joint4" type="revolute">
@@ -123,22 +123,22 @@
 				<origin xyz="-2.1e-05 0.12337 1.148" />
 				<inertia ixx="0.177" ixy="-2.34e-06" ixz="-4.92e-06" iyy="0.161" iyz="-0.05" izz="0.022" />
 			</inertial>
-            <collision>
-                <origin rpy="-0.55 0 0" xyz="0 0.07 -0.3" />
-                <geometry>
-                    <cylinder radius="0.07" length="0.4"/>
-                </geometry>
-            </collision>
+			<collision>
+					<origin rpy="-0.55 0 0" xyz="0 0.07 -0.3" />
+					<geometry>
+							<cylinder radius="0.07" length="0.4"/>
+					</geometry>
+			</collision>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_4_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_4_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_4_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_4_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -157,16 +157,16 @@
 				<origin xyz="-1.7e-05 0.06662 1.33103" />
 				<inertia ixx="0.007" ixy="-4.93e-06" ixz="-5.57e-06" iyy="0.004" iyz="-6.64e-05" izz="0.007" />
 			</inertial>
-            <collision>
-                <origin rpy="1.571 0 0" xyz="0 0 0" />
-                <geometry>
-                    <cylinder radius="0.08" length="0.15"/>
-                </geometry>
-            </collision>
+			<collision>
+					<origin rpy="1.571 0 0" xyz="0 0 0" />
+					<geometry>
+							<cylinder radius="0.08" length="0.15"/>
+					</geometry>
+			</collision>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_5_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_5_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -174,7 +174,7 @@
 		<joint name="joint6" type="revolute">
 			<parent link="link5" />
 			<child link="link6" />
-			<origin rpy="1.571 0 0" xyz="0 -0.124 0" />
+			<origin rpy="1.571 0 0" xyz="0 -0.121 0" />
 			<axis xyz="0 0 1" />
 			<limit effort="50" lower="-6.283" upper="6.283" velocity="3.927" />
 			<dynamics friction="0" />
@@ -188,7 +188,7 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/m1013_blue/MF1013_6_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/m1013_blue/MF1013_6_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>

@@ -111,7 +111,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <ambient>
-              <color sid="ambient">0 0 0 1</color>
+              <color sid="ambient">0.1384 0.1879998 0.2384 1</color>
             </ambient>
             <diffuse>
               <color sid="diffuse">0.1384 0.1879998 0.2384 1</color>

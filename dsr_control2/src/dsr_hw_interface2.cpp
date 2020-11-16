@@ -741,12 +741,12 @@ namespace dsr_control2{
         // Publisher msg        
         m_PubJointState  = private_nh_->create_publisher<sensor_msgs::msg::JointState>("joint_states",100);
         m_PubRobotState = private_nh_->create_publisher<dsr_msgs2::msg::RobotState>("state",100);
-        m_PubRobotError = private_nh_->create_publisher<dsr_msgs2::msg::RobotError>("error",100);
+        ///m_PubRobotError = private_nh_->create_publisher<dsr_msgs2::msg::RobotError>("error",100);
 
         
         //TODO gazebo에 joint position 전달
         //ROS2 m_PubtoGazebo = private_nh_.advertise<std_msgs::Float64MultiArray>("/dsr_joint_position_controller/command",10);
-        m_PubtoGazebo = private_nh_->create_publisher<std_msgs::msg::Float64MultiArray>("dsr_joint_position_controller/command",10);
+        m_PubtoGazebo = private_nh_->create_publisher<std_msgs::msg::Float64MultiArray>("commands",100);
         
         //TODO moveit의 trajectory/goal를 받아 제어기로 전달
         //ROS2 m_sub_joint_trajectory = private_nh_.subscribe("dsr_joint_trajectory_controller/follow_joint_trajectory/goal", 10, &DRHWInterface::trajectoryCallback, this);
@@ -768,12 +768,12 @@ namespace dsr_control2{
         // system Operations
         //ROS2 m_nh_system[0] = private_nh_.advertiseService("system/set_robot_mode", &DRHWInterface::set_robot_mode_cb, this);
         //auto server_system_0 = private_nh_->create_service<dsr_msgs2::srv::SetRobotMode>("system/set_robot_mode", DRHWInterface::set_robot_mode_cb);
-        m_nh_system_0 = private_nh_->create_service<dsr_msgs2::srv::SetRobotMode>("system/set_robot_mode", DRHWInterface::set_robot_mode_cb);
+        m_nh_srv_set_robot_mode = private_nh_->create_service<dsr_msgs2::srv::SetRobotMode>("system/set_robot_mode", DRHWInterface::set_robot_mode_cb);
 
         //  motion Operations
         //auto server_motion_service_0  = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::movej_cb);
-        m_nh_motion_service_0 = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::movej_cb);
-        m_nh_motion_service_1 = private_nh_->create_service<dsr_msgs2::srv::MoveLine>("motion/move_line", DRHWInterface::movel_cb);
+        m_nh_srv_move_joint     = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::movej_cb);
+        m_nh_srv_move_line      = private_nh_->create_service<dsr_msgs2::srv::MoveLine>("motion/move_line", DRHWInterface::movel_cb);
 
         // Gripper Operations
         // Serial Operations  
@@ -809,7 +809,6 @@ namespace dsr_control2{
     hardware_interface::return_type DRHWInterface::init()
     {
         RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[dsr_hw_interface2] init() ==> setup callback fucntion");
-#if _OLD_ROS2_CONTROL
 
         auto joint_names = {
           "joint1",
@@ -819,6 +818,8 @@ namespace dsr_control2{
           "joint5",
           "joint6",
         };
+
+#if _OLD_ROS2_CONTROL
 
         joint_state_handles_.resize(joint_names.size());
         joint_command_handles_.resize(joint_names.size());
@@ -955,7 +956,6 @@ namespace dsr_control2{
     hardware_interface::return_type DRHWInterface::read()
     {   
         ///RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::read()");
-
 #if _OLD_ROS2_CONTROL
         //ROS2 std_msgs::Float64MultiArray msg;
         std_msgs::msg::Float64MultiArray msg;
@@ -970,20 +970,23 @@ namespace dsr_control2{
             msg.data.push_back(m_joints[i].pos);
         }
 #else      
+        std_msgs::msg::Float64MultiArray msg;
         LPROBOT_POSE pose = Drfl.GetCurrentPose();
-
         size_t i = 0;
         for (auto & joint_name : joint_names)
         {
             m_joints[i].pos = deg2rad(pose->_fPosition[i]);
-
+            
             auto joint_handle = std::make_shared<hardware_interface::JointHandle>(joint_name, "position");
             get_joint_handle(*joint_handle);
             joint_handle->set_value(m_joints[i].pos); 
-
+            msg.data.push_back(m_joints[i].pos);
+            //RCLCPP_INFO(rclcpp::get_logger("+++++gazebo msg++++++"),"[init]::read %d-pos: %7.3f", i, msg.data[i]);
             ++i;
         }
-#endif      
+        m_PubtoGazebo->publish(msg);
+#endif   
+        
 //TODO        if(m_strRobotGripper != "none"){
 //TODO            msg.data.push_back(m_joints[6].pos);
 //TODO        }

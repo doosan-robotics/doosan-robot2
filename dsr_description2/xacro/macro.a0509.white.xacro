@@ -3,9 +3,9 @@
 <robot name="a0509" xmlns:xacro="http://www.ros.org/wiki/xacro">
 	<xacro:include filename="$(find dsr_description2)/config/macro.gazebo.xacro" />
 	<xacro:include filename="$(find dsr_description2)/config/macro.transmission.xacro" />
-	<xacro:include filename="$(find dsr_description2)/config/macro.materials.xacro" />
+	<!--xacro:include filename="$(find dsr_description2)/config/macro.materials.xacro" /-->
 	<xacro:macro name="a0509" params="namespace">
-		<xacro:dsr_materials />
+		<!--xacro:dsr_materials /-->
 		<link name="base_0">
 			<inertial>
 				<mass value="3.722" />
@@ -15,7 +15,7 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_0_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_0_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -42,19 +42,19 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_1_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_1_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
             <visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_1_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_1_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
             <visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_1_2.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_1_2.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -82,19 +82,19 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_2_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_2_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_2_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_2_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_2_2.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_2_2.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -116,13 +116,13 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_3_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_3_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
             <visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_3_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_3_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -150,13 +150,13 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_4_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_4_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_4_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_4_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -184,13 +184,13 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_5_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_5_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
             <visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_5_1.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_5_1.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>
@@ -212,7 +212,7 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0 0 0" />
 				<geometry>
-					<mesh filename="package://dsr_description2/meshes/a0509_white/A0509_6_0.dae" scale="0.001 0.001 0.001" />
+					<mesh filename="file:///$(find dsr_description2)/meshes/a0509_white/A0509_6_0.dae" scale="0.001 0.001 0.001" />
 				</geometry>
 			</visual>
 		</link>

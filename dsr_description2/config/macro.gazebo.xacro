@@ -53,7 +53,7 @@
       <mu1>30.0</mu1>
       <mu2>30.0</mu2>
       <maxVel>1.0</maxVel>
-          <minDepth>0.001</minDepth>
+      <minDepth>0.001</minDepth>
     </gazebo>
       <!-- Link6 -->
       <gazebo reference="link6">

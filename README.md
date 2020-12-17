@@ -111,8 +111,7 @@ $ git clone -b use_new_joint_handle https://github.com/ShotaAk/fake_joint
 Please do the additional work below to build a fake_joint package that is compatible with our ROS2 package.
 ```bash
 $ cd ~/ros2_ws/src
-$ rm -rf fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
-$ cp common2/resource/fake_joint_driver_node.cpp fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
+$ cp doosan-robot2/common2/resource/fake_joint_driver_node.cpp fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
 ```
 You can install the dependency package through the command below.
 ```bash

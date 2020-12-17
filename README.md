@@ -23,6 +23,7 @@
     $ git clone https://github.com/ros-simulation/gazebo_ros2_control.git
     $ cd ros2_control && git reset --hard 3dc62e28e3bc8cf636275825526c11d13b554bb6 && cd ..
     $ cd ros2_controllers && git reset --hard 83c494f460f1c8675f4fdd6fb8707b87e81cb197 && cd ..
+    $ git clone -b ros2 --single-branch https://github.com/ros-planning/moveit_msgs
     $ cd ~/ros2_ws
     $ rosdep update
     $ rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
@@ -100,7 +101,6 @@ To use the moveit2 package, you need to install the following packages.
 ```bash
 $ cd ~/ros2_ws/src
 $ git clone https://github.com/ros-planning/moveit2
-$ git clone -b ros2 --single-branch https://github.com/ros-planning/moveit_msgs
 $ git clone -b ros2 --single-branch https://github.com/ros-planning/warehouse_ros
 $ git clone -b ros2 --single-branch  https://github.com/ros-planning/warehouse_ros_mongo
 $ git clone -b ros2 --single-branch https://github.com/ros-planning/srdfdom

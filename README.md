@@ -97,22 +97,27 @@ $ ros2 launch dsr_launcher2 single_robot_gazebo.launch.py
 
 ### Moveit
 To use the moveit2 package, you need to install the following packages.
-    $ cd ~/ros2_ws/src
-    $ git clone https://github.com/ros-planning/moveit2
-    $ git clone -b ros2 --single-branch https://github.com/ros-planning/moveit_msgs
-    $ git clone -b ros2 --single-branch https://github.com/ros-planning/warehouse_ros
-    $ git clone -b ros2 --single-branch  https://github.com/ros-planning/warehouse_ros_mongo
-    $ git clone -b ros2 --single-branch https://github.com/ros-planning/srdfdom
-    $ git clone -b ros2 --single-branch https://github.com/ros-planning/geometric_shapes
-    $ git clone -b use_new_joint_handle https://github.com/ShotaAk/fake_joint
+```bash
+$ cd ~/ros2_ws/src
+$ git clone https://github.com/ros-planning/moveit2
+$ git clone -b ros2 --single-branch https://github.com/ros-planning/moveit_msgs
+$ git clone -b ros2 --single-branch https://github.com/ros-planning/warehouse_ros
+$ git clone -b ros2 --single-branch  https://github.com/ros-planning/warehouse_ros_mongo
+$ git clone -b ros2 --single-branch https://github.com/ros-planning/srdfdom
+$ git clone -b ros2 --single-branch https://github.com/ros-planning/geometric_shapes
+$ git clone -b use_new_joint_handle https://github.com/ShotaAk/fake_joint
+```
     
 Please do the additional work below to build a fake_joint package that is compatible with our ROS2 package.
-    $ cd ~/ros2_ws/src
-    $ rm -rf fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
-    $ cp common2/resource/fake_joint_driver_node.cpp fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
-
+```bash
+$ cd ~/ros2_ws/src
+$ rm -rf fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
+$ cp common2/resource/fake_joint_driver_node.cpp fake_joint/fake_joint_driver/src/fake_joint_driver_node.cpp
+```
 You can install the dependency package through the command below.
-    $ cd ~/ros2_ws/src
-    $ rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y
+```bash
+$ cd ~/ros2_ws/src
+$ rosdep install -r --from-paths . --ignore-src --rosdistro foxy -
+```
     
     

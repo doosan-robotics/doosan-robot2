@@ -117,7 +117,7 @@ $ cp common2/resource/fake_joint_driver_node.cpp fake_joint/fake_joint_driver/sr
 You can install the dependency package through the command below.
 ```bash
 $ cd ~/ros2_ws/src
-$ rosdep install -r --from-paths . --ignore-src --rosdistro foxy -
+$ rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y
 ```
     
     

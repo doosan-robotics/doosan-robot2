@@ -118,5 +118,16 @@ You can install the dependency package through the command below.
 $ cd ~/ros2_ws/src
 $ rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y
 ```
-    
+You can run moveit2 with fake_controller from the moveit_config package.
+Please refer to the command format below.
+
+> ros2 launch moveit_config_<robot_model> <robot_model>.launch.py
+```bash
+$ ros2 launch moveit_config_m1013 m1013.launch.py
+```
+Moveit2 can be executed in conjunction with the control node. Enter the following command to use moveit2's planning function in conjunction with the actual robot.
+Refer to the arguments of the __Run dsr_control2 node__ item mentioned above.
+```bash
+$ ros2 launch dsr_control2 dsr_moveit.launch.py host:=192.168.137.100 port:=12345 mode:=real
+```
     

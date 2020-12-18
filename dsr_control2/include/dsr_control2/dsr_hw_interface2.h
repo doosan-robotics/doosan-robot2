@@ -204,8 +204,8 @@
 #include "dsr_msgs2/srv/serial_send_data.hpp"
 
 // moveit
-///TODO #include <moveit_msgs/msg/display_trajectory.hpp>
-///TODO #include <moveit_msgs/msg/robot_trajectory.hpp>
+#include <moveit_msgs/msg/display_trajectory.hpp>
+#include <moveit_msgs/msg/robot_trajectory.hpp>
 
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <trajectory_msgs/msg/joint_trajectory_point.hpp>
@@ -681,7 +681,8 @@ namespace dsr_control2{
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr/*rclcpp::Node::SharedPtr*/ m_PubJointState;  //add for TEST
 
         //----- Subscriber ------------------------------------------------------------
-        rclcpp::Subscription<control_msgs::action::FollowJointTrajectory::Goal>::SharedPtr m_sub_joint_trajectory;
+        rclcpp::Subscription<moveit_msgs::msg::DisplayTrajectory>::SharedPtr m_sub_joint_trajectory;
+
         ///TODO rclcpp::Subscription<???>::SharedPtr                        m_sub_joint_position;
         ///TODO rclcpp::Subscription<???>::SharedPtr                        m_SubSerialRead;
         ///TODO rclcpp::Subscription<???>::SharedPtr                        m_sub_jog_multi_axis;
@@ -720,8 +721,10 @@ namespace dsr_control2{
 //ROS2 ???        void sigint_handler( int signo);
 
 //ROS2  void trajectoryCallback(const control_msgs::FollowJointTrajectoryActionGoal::ConstPtr& msg);
-        void trajectoryCallback(const control_msgs::action::FollowJointTrajectory_Goal::SharedPtr msg) const;
+        void trajectoryCallback(const moveit_msgs::msg::DisplayTrajectory::SharedPtr msg) const;
+
         void testSubCallback(const std_msgs::msg::String::SharedPtr msg) const;
+
 //ROS2        void positionCallback(const std_msgs::Float64MultiArray::ConstPtr& msg);
 //ROS2 ???              void positionCallback(const std_msgs::msg::Float64MultiArray::ConstPtr& msg);
 
@@ -745,28 +748,136 @@ namespace dsr_control2{
 
         //----- System
         static void set_robot_mode_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotMode::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotMode::Response> res);
+        static void get_robot_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotMode::Response> res);      
+        static void set_robot_system_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotSystem::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotSystem::Response> res);         
+        static void get_robot_system_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotSystem::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotSystem::Response> res);         
+        static void get_robot_state_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotState::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotState::Response> res);        
+        static void set_robot_speed_mode_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotSpeedMode::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotSpeedMode::Response> res);    
+        static void get_robot_speed_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotSpeedMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotSpeedMode::Response> res);       
+        static void get_current_pose_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPose::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPose::Response> res);   
+        static void set_safe_stop_reset_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetSafeStopResetType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetSafeStopResetType::Response> res);     
+        static void get_last_alarm_cb(const std::shared_ptr<dsr_msgs2::srv::GetLastAlarm::Request> req, std::shared_ptr<dsr_msgs2::srv::GetLastAlarm::Response> res);   
 
         //----- MOTION
-        static void movej_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJoint::Response> res);
-        static void movel_cb(const std::shared_ptr<dsr_msgs2::srv::MoveLine::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveLine::Response> res);
+        static void move_joint_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJoint::Response> res);
+        static void move_line_cb(const std::shared_ptr<dsr_msgs2::srv::MoveLine::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveLine::Response> res);
+        static void move_jointx_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJointx::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJointx::Response> res);               
+        static void move_circle_cb(const std::shared_ptr<dsr_msgs2::srv::MoveCircle::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveCircle::Response> res);       
+        static void move_spline_joint_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSplineJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSplineJoint::Response> res);      
+        static void move_spline_task_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSplineTask::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSplineTask::Response> res);          
+        static void move_blending_cb(const std::shared_ptr<dsr_msgs2::srv::MoveBlending::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveBlending::Response> res);          
+        static void move_spiral_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSpiral::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSpiral::Response> res);              
+        static void move_periodic_cb(const std::shared_ptr<dsr_msgs2::srv::MovePeriodic::Request> req, std::shared_ptr<dsr_msgs2::srv::MovePeriodic::Response> res);              
+
+        static void move_wait_cb(const std::shared_ptr<dsr_msgs2::srv::MoveWait::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveWait::Response> res);                  
+        static void jog_cb(const std::shared_ptr<dsr_msgs2::srv::Jog::Request> req, std::shared_ptr<dsr_msgs2::srv::Jog::Response> res);              
+        static void jog_multi_cb(const std::shared_ptr<dsr_msgs2::srv::JogMulti::Request> req, std::shared_ptr<dsr_msgs2::srv::JogMulti::Response> res);                      
+        static void move_pause_cb(const std::shared_ptr<dsr_msgs2::srv::MovePause::Request> req, std::shared_ptr<dsr_msgs2::srv::MovePause::Response> res);                      
+        static void move_stop_cb(const std::shared_ptr<dsr_msgs2::srv::MoveStop::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveStop::Response> res);                  
+        static void move_resume_cb(const std::shared_ptr<dsr_msgs2::srv::MoveResume::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveResume::Response> res);                  
+        static void trans_cb(const std::shared_ptr<dsr_msgs2::srv::Trans::Request> req, std::shared_ptr<dsr_msgs2::srv::Trans::Response> res);                  
+        static void fkin_cb(const std::shared_ptr<dsr_msgs2::srv::Fkin::Request> req, std::shared_ptr<dsr_msgs2::srv::Fkin::Response> res);              
+        static void ikin_cb(const std::shared_ptr<dsr_msgs2::srv::Ikin::Request> req, std::shared_ptr<dsr_msgs2::srv::Ikin::Response> res);              
+        static void set_ref_coord_cb(const std::shared_ptr<dsr_msgs2::srv::SetRefCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRefCoord::Response> res);                  
+        static void move_home_cb(const std::shared_ptr<dsr_msgs2::srv::MoveHome::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveHome::Response> res);                  
+        static void check_motion_cb(const std::shared_ptr<dsr_msgs2::srv::CheckMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckMotion::Response> res);                  
+        static void change_operation_speed_cb(const std::shared_ptr<dsr_msgs2::srv::ChangeOperationSpeed::Request> req, std::shared_ptr<dsr_msgs2::srv::ChangeOperationSpeed::Response> res);        
+        static void enable_alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::EnableAlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::EnableAlterMotion::Response> res);                 
+        static void alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::AlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::AlterMotion::Response> res);              
+        static void disable_alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::DisableAlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::DisableAlterMotion::Response> res);              
+        static void set_singularity_handling_cb(const std::shared_ptr<dsr_msgs2::srv::SetSingularityHandling::Request> req, std::shared_ptr<dsr_msgs2::srv::SetSingularityHandling::Response> res);  
 
         //----- auxiliary_control
+        static void get_control_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetControlMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetControlMode::Response> res);                           
+        static void get_control_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetControlSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetControlSpace::Response> res);                          
+        static void get_current_posj_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPosj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPosj::Response> res);                                            
+        static void get_current_velj_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentVelj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentVelj::Response> res);                                
+        static void get_desired_posj_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredPosj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredPosj::Response> res);         
+        static void get_desired_velj_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredVelj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredVelj::Response> res);                                   
+        static void get_current_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPosx::Response> res);                               
+        static void get_current_tool_flange_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentToolFlangePosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentToolFlangePosx::Response> res);                 
+        static void get_current_velx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentVelx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentVelx::Response> res);                         
+        static void get_desired_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredPosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredPosx::Response> res);     
+        static void get_desired_velx_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredVelx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredVelx::Response> res);                             
+        static void get_current_solution_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentSolutionSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentSolutionSpace::Response> res);                    
+        static void get_current_rotm_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentRotm::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentRotm::Response> res);                     
+        static void get_joint_torque_cb(const std::shared_ptr<dsr_msgs2::srv::GetJointTorque::Request> req, std::shared_ptr<dsr_msgs2::srv::GetJointTorque::Response> res);                     
+        static void get_external_torque_cb(const std::shared_ptr<dsr_msgs2::srv::GetExternalTorque::Request> req, std::shared_ptr<dsr_msgs2::srv::GetExternalTorque::Response> res);                
+        static void get_tool_force_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolForce::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolForce::Response> res);                               
+        static void get_solution_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetSolutionSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetSolutionSpace::Response> res);       
+        static void get_orientation_error_cb(const std::shared_ptr<dsr_msgs2::srv::GetOrientationError::Request> req, std::shared_ptr<dsr_msgs2::srv::GetOrientationError::Response> res);              
 
         //----- force/stiffness
-
-        //----- TCP
-
-        //----- TOOL
+        static void parallel_axis1_cb(const std::shared_ptr<dsr_msgs2::srv::ParallelAxis1::Request> req, std::shared_ptr<dsr_msgs2::srv::ParallelAxis1::Response> res);  
+        static void parallel_axis2_cb(const std::shared_ptr<dsr_msgs2::srv::ParallelAxis2::Request> req, std::shared_ptr<dsr_msgs2::srv::ParallelAxis2::Response> res);  
+        static void align_axis1_cb(const std::shared_ptr<dsr_msgs2::srv::AlignAxis1::Request> req, std::shared_ptr<dsr_msgs2::srv::AlignAxis1::Response> res);          
+        static void align_axis2_cb(const std::shared_ptr<dsr_msgs2::srv::AlignAxis2::Request> req, std::shared_ptr<dsr_msgs2::srv::AlignAxis2::Response> res);      
+        static void is_done_bolt_tightening_cb(const std::shared_ptr<dsr_msgs2::srv::IsDoneBoltTightening::Request> req, std::shared_ptr<dsr_msgs2::srv::IsDoneBoltTightening::Response> res);      
+        static void release_compliance_ctrl_cb(const std::shared_ptr<dsr_msgs2::srv::ReleaseComplianceCtrl::Request> req, std::shared_ptr<dsr_msgs2::srv::ReleaseComplianceCtrl::Response> res);         
+        static void task_compliance_ctrl_cb(const std::shared_ptr<dsr_msgs2::srv::TaskComplianceCtrl::Request> req, std::shared_ptr<dsr_msgs2::srv::TaskComplianceCtrl::Response> res);          
+        static void set_stiffnessx_cb(const std::shared_ptr<dsr_msgs2::srv::SetStiffnessx::Request> req, std::shared_ptr<dsr_msgs2::srv::SetStiffnessx::Response> res);          
+        static void calc_coord_cb(const std::shared_ptr<dsr_msgs2::srv::CalcCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::CalcCoord::Response> res);      
+        static void set_user_cart_coord1_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord1::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord1::Response> res);          
+        static void set_user_cart_coord2_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord2::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord2::Response> res);              
+        static void set_user_cart_coord3_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord3::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord3::Response> res);      
+        static void overwrite_user_cart_coord_cb(const std::shared_ptr<dsr_msgs2::srv::OverwriteUserCartCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::OverwriteUserCartCoord::Response> res);      
+        static void get_user_cart_coord_cb(const std::shared_ptr<dsr_msgs2::srv::GetUserCartCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::GetUserCartCoord::Response> res);          
+        static void set_desired_force_cb(const std::shared_ptr<dsr_msgs2::srv::SetDesiredForce::Request> req, std::shared_ptr<dsr_msgs2::srv::SetDesiredForce::Response> res);          
+        static void release_force_cb(const std::shared_ptr<dsr_msgs2::srv::ReleaseForce::Request> req, std::shared_ptr<dsr_msgs2::srv::ReleaseForce::Response> res);      
+        static void check_position_condition_cb(const std::shared_ptr<dsr_msgs2::srv::CheckPositionCondition::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckPositionCondition::Response> res);          
+        static void check_force_condition_cb(const std::shared_ptr<dsr_msgs2::srv::CheckForceCondition::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckForceCondition::Response> res);      
+        static void check_orientation_condition1_cb(const std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition1::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition1::Response> res);             
+        static void check_orientation_condition2_cb(const std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition2::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition2::Response> res);            
+        static void coord_transform_cb(const std::shared_ptr<dsr_msgs2::srv::CoordTransform::Request> req, std::shared_ptr<dsr_msgs2::srv::CoordTransform::Response> res);          
+        static void get_workpiece_weight_cb(const std::shared_ptr<dsr_msgs2::srv::GetWorkpieceWeight::Request> req, std::shared_ptr<dsr_msgs2::srv::GetWorkpieceWeight::Response> res);          
+        static void reset_workpiece_weight_cb(const std::shared_ptr<dsr_msgs2::srv::ResetWorkpieceWeight::Request> req, std::shared_ptr<dsr_msgs2::srv::ResetWorkpieceWeight::Response> res);          
 
         //----- IO
+        static void set_ctrl_box_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxDigitalOutput::Response> res);    
+        static void get_ctrl_box_digital_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalInput::Response> res);   
+        static void set_tool_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetToolDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetToolDigitalOutput::Response> res);   
+        static void get_tool_digital_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolDigitalInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolDigitalInput::Response> res);   
+        static void set_ctrl_box_analog_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutput::Response> res);   
+        static void get_ctrl_box_analog_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxAnalogInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxAnalogInput::Response> res);   
+        static void set_ctrl_box_analog_output_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType::Response> res);   
+        static void set_ctrl_box_analog_input_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogInputType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogInputType::Response> res);       
+        static void get_ctrl_box_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalOutput::Response> res);   
+        static void get_tool_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolDigitalOutput::Response> res);   
 
         //----- MODBUS
+        static void set_modbus_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetModbusOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetModbusOutput::Response> res);    
+        static void get_modbus_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetModbusInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetModbusInput::Response> res);    
+        static void config_create_modbus_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateModbus::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateModbus::Response> res);
+        static void config_delete_modbus_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteModbus::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteModbus::Response> res);
 
         //----- DRL        
+        static void drl_pause_cb(const std::shared_ptr<dsr_msgs2::srv::DrlPause::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlPause::Response> res);                         
+        static void drl_start_cb(const std::shared_ptr<dsr_msgs2::srv::DrlStart::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlStart::Response> res);    
+        static void drl_stop_cb(const std::shared_ptr<dsr_msgs2::srv::DrlStop::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlStop::Response> res);    
+        static void drl_resume_cb(const std::shared_ptr<dsr_msgs2::srv::DrlResume::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlResume::Response> res);        
+        static void get_drl_state_cb(const std::shared_ptr<dsr_msgs2::srv::GetDrlState::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDrlState::Response> res);       
+
+
+        //----- TCP
+        static void config_create_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateTcp::Response> res);    
+        static void config_delete_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTcp::Response> res);  
+        static void get_current_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentTcp::Response> res);       
+        static void set_current_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::SetCurrentTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCurrentTcp::Response> res);       
+
+        //----- TOOL
+        static void config_create_tool_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateTool::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateTool::Response> res); 
+        static void config_delete_tool_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTool::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTool::Response> res);    
+        static void get_current_tool_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentTool::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentTool::Response> res);     
+        static void set_current_tool_cb(const std::shared_ptr<dsr_msgs2::srv::SetCurrentTool::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCurrentTool::Response> res);     
+        static void set_tool_shape_cb(const std::shared_ptr<dsr_msgs2::srv::SetToolShape::Request> req, std::shared_ptr<dsr_msgs2::srv::SetToolShape::Response> res); 
 
         //----- Gripper
+        static void robotiq2_f_open_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FOpen::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FOpen::Response> res); 
+        static void robotiq2_f_close_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FClose::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FClose::Response> res);
+        static void robotiq2_f_move_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FMove::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FMove::Response> res);
 
         //----- Serial
+        static void serial_send_data_cb(const std::shared_ptr<dsr_msgs2::srv::SerialSendData::Request> req, std::shared_ptr<dsr_msgs2::srv::SerialSendData::Response> res);
 
     };
 }

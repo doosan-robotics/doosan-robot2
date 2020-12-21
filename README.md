@@ -115,8 +115,9 @@ $ cp doosan-robot2/common2/resource/fake_joint_driver_node.cpp fake_joint/fake_j
 ```
 You can install the dependency package through the command below.
 ```bash
-$ cd ~/ros2_ws/src
-$ rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y
+$ cd ~/ros2_ws
+$ rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
+$ colcon build
 ```
 You can run moveit2 with fake_controller from the moveit_config package.
 Please refer to the command format below.

@@ -117,6 +117,7 @@ You can install the dependency package through the command below.
 ```bash
 $ cd ~/ros2_ws
 $ rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
+$ rm -rf src/doosan-robot2/moveit_config_*/COLCON_IGNORE    # Command to activate the moveit package before colcon build
 $ colcon build
 ```
 You can run moveit2 with fake_controller from the moveit_config package.

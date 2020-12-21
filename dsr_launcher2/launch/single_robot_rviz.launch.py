@@ -12,6 +12,8 @@ from launch_ros.actions import Node
 from launch.substitutions import PathJoinSubstitution
 from launch.launch_context import LaunchContext
 
+import xacro
+
 args =[ 
     DeclareLaunchArgument('name',  default_value = 'dsr01',     description = 'NAME_SPACE'     ),
     DeclareLaunchArgument('host',  default_value = '127.0.0.1', description = 'ROBOT_IP'       ),
@@ -45,14 +47,9 @@ def load_yaml(package_name, file_path):
 
 def generate_launch_description():
 
-    #robot_description_config = load_file('dsr_description2', 'urdf/' + 'm1013' + '.urdf')
-    #robot_description = {'robot_description' : robot_description_config}
-    #print(get_package_share_directory('dsr_description2'))
-
-    urdf = os.path.join( get_package_share_directory('dsr_description2'), 'urdf')
     xacro_path = os.path.join( get_package_share_directory('dsr_description2'), 'xacro')
 
-    # RViz
+    # RViz2
     rviz_config_file = get_package_share_directory('dsr_description2') + "/rviz/default.rviz"
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
@@ -67,18 +64,15 @@ def generate_launch_description():
                      output='log',
                      arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'base', 'base_0'])
 
-    # Publish TF
+    # robot_state_publisher
     robot_state_publisher = Node(package='robot_state_publisher',
                                  executable='robot_state_publisher',
                                  name='robot_state_publisher',
-                                 output='both',
+                                 #output='both',
+                                 output='screen',
                                  parameters=[{
                                     'robot_description': Command(['xacro', ' ', xacro_path, '/', LaunchConfiguration('model'), '.urdf.xacro color:=', LaunchConfiguration('color')])           
                                  }])
-
-    joint_state_publisher_gui = Node(package='joint_state_publisher_gui',
-                                    executable='joint_state_publisher_gui',
-                                    name='joint_state_publisher_gui')
 
     # dsr_control2 
     dsr_control2 = Node(package='dsr_control2', 
@@ -98,6 +92,12 @@ def generate_launch_description():
 	                        {"mobile":  "none"      },
                             #parameters_file_path       # 파라미터 설정을 동일이름으로 launch 파일과 yaml 파일에서 할 경우 yaml 파일로 셋팅된다.    
                         ]
-                    )    
-    #return LaunchDescription([ static_tf, robot_state_publisher, joint_state_publisher_gui, rviz_node])
-    return LaunchDescription(args + [ static_tf, robot_state_publisher, dsr_control2, rviz_node])
+                    )
+
+    # rviz2
+    return LaunchDescription(args + [
+        static_tf,
+        robot_state_publisher,
+        rviz_node,
+        dsr_control2,
+    ])

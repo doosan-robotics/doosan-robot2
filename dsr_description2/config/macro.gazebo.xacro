@@ -1,89 +1,102 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 	<xacro:macro name="dsr_gazebo" params="namespace:=/">
-		<!-- Base -->
-        <selfCollide>true</selfCollide>
-        <gazebo reference="dsr01">
-            <selfCollide>true</selfCollide>
-        </gazebo>
-		<gazebo reference="base_0">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- Link1 -->
-		<gazebo reference="link1">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- Link2 -->
-		<gazebo reference="link2">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- Link3 -->
-		<gazebo reference="link3">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- Link4 -->
-		<gazebo reference="link4">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- Link5 -->
-		<gazebo reference="link5">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- Link6 -->
-		<gazebo reference="link6">
-            <selfCollide>true</selfCollide>
-			<kp>1000000.0</kp>
-			<kd>100.0</kd>
-			<mu1>30.0</mu1>
-			<mu2>30.0</mu2>
-			<maxVel>1.0</maxVel>
-			<minDepth>0.001</minDepth>
-		</gazebo>
-		<!-- ros_control plugin -->
-		<gazebo>
-            <selfCollide>true</selfCollide>
-			<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-				<robotNamespace>/${namespace}</robotNamespace>
-				<controlPeriod>0.001</controlPeriod>
-				<robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-                <legacyModeNS>true</legacyModeNS>
-			</plugin>
-		</gazebo>
+    <!-- Base -->
+    <gazebo reference="base_0">
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <mu1>30.0</mu1>
+      <mu2>30.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+    <!-- Link1 -->
+    <gazebo reference="link1">
+          <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <mu1>30.0</mu1>
+      <mu2>30.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+    <!-- Link2 -->
+    <gazebo reference="link2">
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <mu1>30.0</mu1>
+      <mu2>30.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+    <!-- Link3 -->
+    <gazebo reference="link3">
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <mu1>30.0</mu1>
+      <mu2>30.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+    <!-- Link4 -->
+    <gazebo reference="link4">
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <mu1>30.0</mu1>
+      <mu2>30.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+    <!-- Link5 -->
+    <gazebo reference="link5">    
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <mu1>30.0</mu1>
+      <mu2>30.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+      <!-- Link6 -->
+      <gazebo reference="link6">
+              
+        <kp>1000000.0</kp>
+        <kd>100.0</kd>
+        <mu1>30.0</mu1>
+        <mu2>30.0</mu2>
+        <maxVel>1.0</maxVel>
+        <minDepth>0.001</minDepth>
+      </gazebo>
+      <!-- ros_control plugin -->
+    <gazebo>
+      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+        <!--ros>
+          <namespace>/</namespace>
+            <parameter name="joint1.p" type="double">400.0</parameter>
+            <parameter name="joint1.i" type="double">0.0</parameter>
+          <parameter name="joint1.d" type="double">40.0</parameter>
+
+            <parameter name="joint2.p" type="double">400.0</parameter>
+            <parameter name="joint2.i" type="double">0.0</parameter>
+          <parameter name="joint2.d" type="double">40.0</parameter>
+
+            <parameter name="joint3.p" type="double">1000.0</parameter>
+            <parameter name="joint3.i" type="double">0.0</parameter>
+          <parameter name="joint3.d" type="double">10.0</parameter>
+
+            <parameter name="joint4.p" type="double">800.0</parameter>
+            <parameter name="joint4.i" type="double">0.0</parameter>
+          <parameter name="joint4.d" type="double">30.0</parameter>
+
+            <parameter name="joint5.p" type="double">1500.0</parameter>
+            <parameter name="joint5.i" type="double">0.0</parameter>
+          <parameter name="joint5.d" type="double">10.0</parameter>
+
+            <parameter name="joint6.p" type="double">1500.0</parameter>
+            <parameter name="joint6.i" type="double">0.0</parameter>
+          <parameter name="joint6.d" type="double">10.0</parameter>
+        </ros-->
+        <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+        <parameters>$(find dsr_control2)/config/dsr_control.yaml</parameters>
+      </plugin>
+    </gazebo>
 	</xacro:macro>
 </robot>

@@ -6,7 +6,7 @@
 # @brief    Doosan Robotics ROS2 service I/F module
 # @author   kabdol2<kabkyoum.kim@doosan.com>   
 # @version  0.10
-# @Last update date     2020-10-28
+# @Last update date     2020-12-15
 # @details
 #
 # history
@@ -549,7 +549,10 @@ def _ros_listToFloat64MultiArray(list_src):
     _res = []
     for i in list_src:
         item = Float64MultiArray()
-        item.data = i
+        if __ROS2__:
+            item.data = [float(x) for x in i]
+        else:
+            item.data = i
         _res.append(item)
     #print(_res)
     #print(len(_res))
@@ -726,6 +729,160 @@ def _movej(pos, vel=None, acc=None, time=None, radius=None, mod= DR_MV_MOD_ABS, 
         ret = PythonMgr.py_movej(_pos, _vel, _acc, _time, _radius, mod, ra, _async)
     return ret
 
+def movejx(pos, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, sol=0, v=None, a=None, t=None, r=None):
+    ret = _movejx(pos, vel, acc, time, radius, ref, mod, ra, sol, v, a, t, r, _async=0)
+    return ret 
+def amovejx(pos, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, sol=0, v=None, a=None, t=None, r=None):
+    ret = _movejx(pos, vel, acc, time, radius, ref, mod, ra, sol, v, a, t, r, _async=1)
+    return ret 
+def _movejx(pos, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, sol=0, v=None, a=None, t=None, r=None, _async=0):
+    # _pos
+    _pos = get_posx(pos)
+
+    # _vel
+    temp = get_param(vel, v)
+    if temp == None:
+        _vel = _g_velj
+    else:
+        if type(temp) == int or type(temp) == float:
+            _vel = [temp] * DR_VELJ_DT_LEN
+        elif type(temp) == list and len(temp) == DR_VELJ_DT_LEN:
+            _vel = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+    if is_number(_vel) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    for item in _vel:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    # _acc
+    temp = get_param(acc, a)
+    if temp == None:
+        _acc = _g_accj
+    else:
+        if type(temp) == int or type(temp) == float:
+            _acc = [temp] * DR_ACCJ_DT_LEN
+        elif type(temp) == list and len(temp) == DR_ACCJ_DT_LEN:
+            _acc = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+    if is_number(_acc) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    for item in _acc:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    # _time
+    _time = get_param(time, t)
+    if _time == None:
+        _time = 0.0
+
+    if type(_time) != int and type(_time) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+    if _time < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+    # check vel, acc, time
+    #_check_valid_vel_acc(_vel, _acc, _time)
+    _check_valid_vel_acc_joint(_vel, _acc, _time)
+
+    # _radius
+    _radius = get_param(radius, r)
+    if _radius == None:
+        global _g_blend_state
+
+        if _g_blend_state == True:
+            _radius = _g_blend_radius
+        else:
+            _radius = 0.0
+
+    if type(_radius) != int and type(_radius) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : radius, r")
+
+    if _radius < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : radius, r")
+
+    # _ref
+    if ref == None:
+        _ref = _g_coord
+    else:
+        _ref = ref
+
+    # check ref
+    if type(_ref) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+    if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+    # mod
+    if type(mod) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+    if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+    # ra
+    if type(ra) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type, ra")
+
+    if ra != DR_MV_RA_OVERRIDE and ra != DR_MV_RA_DUPLICATE:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ra")
+
+    # sol
+    if type(sol) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : sol")
+
+    if sol < DR_SOL_MIN or sol > DR_SOL_MAX:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : sol")
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS service call
+    if __ROS2__: 
+        #srv = _ros_movejx(_pos, _vel[0], _acc[0], _time, mod, _ref, _radius, ra, sol, _async)   
+        req = MoveJointx.Request()
+        req.pos         = [float(x) for x in _pos]
+        req.vel         = float(_vel[0])
+        req.acc         = float(_acc[0])
+        req.time        = float(_time)
+        req.mode        = int(mod)
+        req.ref         = int(_ref)
+        req.radius      = float(_radius)
+        req.blend_type  = int(ra)
+        req.sol         = int(sol)
+        req.sync_type   = int(_async)
+
+        #ret = srv.success
+        #ret = 0 if (srv.success == True) else -1
+        future = _ros2_movejx.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('movejx Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1                
+    else:    
+        ret = PythonMgr.py_movejx(_pos, _vel, _acc, _time, _radius, _ref, mod, ra, sol, _async)
+        print_ext_result("{0} = PythonMgr.py_movejx(pos:{1}, vel:{2}, acc:{3}, time:{4}, radius:{5}, ref{6}, mod{7}, ra:{8}, sol:{9}, async:{10})" \
+                         .format(ret, _pos, dr_form(_vel), dr_form(_acc), _time, _radius, _ref, mod, ra, sol, _async))   
+    return ret
+
+
+
 def movel(pos, vel=None, acc=None, time=None, radius=None, ref=None, mod=DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None):
     ret = _movel(pos, vel, acc, time, radius, ref, mod, ra, v, a, t, r, _async=0)
     return ret
@@ -888,6 +1045,849 @@ def _movel(pos, vel=None, acc=None, time=None, radius=None, ref=None, mod=DR_MV_
     return ret
 
 
+
+def movec(pos1, pos2, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, angle=None, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None, an=None):
+    ret = _movec(pos1, pos2, vel, acc, time, radius, ref, mod, angle, ra, v, a, t, r, an, _async=0)
+    return ret
+def amovec(pos1, pos2, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, angle=None, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None, an=None):
+    ret = _movec(pos1, pos2, vel, acc, time, radius, ref, mod, angle, ra, v, a, t, r, an, _async=1)
+    return ret
+def _movec(pos1, pos2, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, angle=None, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None, an=None, _async=0):
+
+    # _pos1, _pos2
+    
+    _pos1 = get_normal_pos(pos1, def_type=posx)
+    _pos2 = get_normal_pos(pos2, def_type=posx)
+
+    if type(_pos1) != type(_pos2):
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos1, ps2")
+
+    # _vel
+    temp = get_param(vel, v)
+    if temp == None:
+        _vel = _g_velx
+    else:
+        if type(temp) == int or type(temp) == float:
+            #_vel = [temp] * DR_VELX_DT_LEN #<����> ���� �� �ΰ� ����
+            _vel = [0] * DR_VELX_DT_LEN     #<����> _vel[0]=temp, _vel[1]= DR_COND_NONE
+            _vel[0] = temp
+            _vel[1] = DR_COND_NONE
+        elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+            _vel = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+    if is_number(_vel) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    for item in _vel:
+        #if item < 0:
+        if (item < 0) and (item != DR_COND_NONE):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    # _acc
+    temp = get_param(acc, a)
+    if temp == None:
+        _acc = _g_accx
+    else:
+        if type(temp) == int or type(temp) == float:
+            #_acc = [temp] * DR_ACCX_DT_LEN #<����> ���� �� �ΰ� ����
+            _acc = [0] * DR_ACCX_DT_LEN     #<����> _acc[0]=temp, _acc[1]= DR_COND_NONE
+            _acc[0] = temp
+            _acc[1] = DR_COND_NONE
+        elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+            _acc = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+    if is_number(_acc) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    for item in _acc:
+        #if item < 0:
+        if (item < 0) and (item != DR_COND_NONE):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    # _time
+    _time = get_param(time, t)
+    if _time == None:
+        _time = 0.0
+
+    if type(_time) != int and type(_time) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+    if _time < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+    # check vel, acc, time
+    #_check_valid_vel_acc(_vel, _acc, _time)
+    _check_valid_vel_acc_task(_vel, _acc, _time)
+
+    # _radius
+    _radius = get_param(radius, r)
+    if _radius == None:
+        global _g_blend_state
+
+        if _g_blend_state == True:
+            _radius = _g_blend_radius
+        else:
+            _radius = 0.0
+
+    if type(_radius) != int and type(_radius) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : radius, r")
+
+    if _radius < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : radius, r")
+
+    # _ref
+    if ref == None:
+        _ref = _g_coord
+    else:
+        _ref = ref
+
+    # check ref
+    if type(_ref) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+    if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+    # mod
+    if type(mod) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+    if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+    # _angle
+    temp = get_param(angle, an)
+    if temp == None:
+        _angle = [0, 0]
+    else:
+        if type(temp) == int or type(temp) == float:
+            _angle = [temp, 0]
+        elif type(temp) == list and len(temp) == DR_ANGLE_DT_LEN:
+            _angle = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : angle, an")
+
+    if is_number(_angle) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : angle, an")
+
+    for item in _angle:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : angle, an")
+
+    # ra
+    if type(ra) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : ra")
+
+    if ra != DR_MV_RA_OVERRIDE and ra != DR_MV_RA_DUPLICATE:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ra")
+
+    # qcommand
+    if type(_pos1) == posx:
+        qcommand = 0
+    else:
+        qcommand = 1
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS service call
+    if __ROS2__:
+        # make multi pos
+        _circle_pos = _ros_listToFloat64MultiArray([_pos1, _pos2])
+        #_circle_pos = _ros_listToFloat64MultiArray([ [float(x) for x in _pos1], [float(x) for x in _pos2] ])
+        #print(_circle_pos)
+
+        #srv = _ros_movec(_circle_pos, _vel, _acc, _time, mod, _ref, _angle[0], _angle[1], _radius, ra, _async) 
+        req = MoveCircle.Request()
+        req.pos         = _circle_pos               #??? 검증필요!
+        req.vel         = [float(x) for x in _vel]
+        req.acc         = [float(x) for x in _acc]
+        req.time        = float(_time)
+        req.radius      = float(_radius)
+        req.ref         = int(_ref)
+        req.mode        = int(mod)
+        req.angle1      = float(_angle[0])
+        req.angle2      = float(_angle[1])
+        req.blend_type  = int(ra)
+        req.sync_type   = int(_async)
+
+        #RRR ret = 0 if (srv.success == True) else -1
+        future = _ros2_movec.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('movec Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1                
+    else:   
+        ret = PythonMgr.py_movec(_pos1, _pos2, _vel, _acc, _time, _radius, _ref, mod, _angle, ra, qcommand, _async)
+        print_ext_result("{0} = PythonMgr.py_movec(pos1:{1}, pos2:{2}, vel:{3}, acc:{4}, time:{5}, radius:{6}, ref:{7}, mod:{8}, angle:{9}, ra:{10}, qcommand:{11}, async:{12})" \
+                         .format(ret, _pos1, _pos2, dr_form(_vel), dr_form(_acc), _time, _radius, _ref, mod, dr_form(_angle), ra, qcommand, _async))
+    return ret
+
+
+def movesj(pos_list, vel=None, acc=None, time=None, mod= DR_MV_MOD_ABS, v=None, a=None, t=None):
+    ret = _movesj(pos_list, vel, acc, time, mod, v, a, t, _async=0)
+    return ret
+def amovesj(pos_list, vel=None, acc=None, time=None, mod= DR_MV_MOD_ABS, v=None, a=None, t=None):
+    ret = _movesj(pos_list, vel, acc, time, mod, v, a, t, _async=1)
+    return ret
+def _movesj(pos_list, vel=None, acc=None, time=None, mod= DR_MV_MOD_ABS, v=None, a=None, t=None, _async=0):
+    # pos_list
+    if type(pos_list) != list:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list")
+
+    for item in pos_list:
+        if type(item) != posj:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list [item]")
+
+    # _vel
+    temp = get_param(vel, v)
+    if temp == None:
+        _vel = _g_velj
+    else:
+        if type(temp) == int or type(temp) == float:
+            _vel = [temp] * DR_VELJ_DT_LEN
+        elif type(temp) == list and len(temp) == DR_VELJ_DT_LEN:
+            _vel = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+    if is_number(_vel) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    for item in _vel:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    # _acc
+    temp = get_param(acc, a)
+    if temp == None:
+        _acc = _g_accj
+    else:
+        if type(temp) == int or type(temp) == float:
+            _acc = [temp] * DR_ACCJ_DT_LEN
+        elif type(temp) == list and len(temp) == DR_ACCJ_DT_LEN:
+            _acc = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+    if is_number(_acc) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    for item in _acc:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    # _time
+    _time = get_param(time, t)
+    if _time == None:
+        _time = 0.0
+
+    if type(_time) != int and type(_time) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+    if _time < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+    # check vel, acc, time
+    #_check_valid_vel_acc(_vel, _acc, _time)
+    _check_valid_vel_acc_joint(_vel, _acc, _time)
+
+    # mod
+    if type(mod) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+    if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS service call
+    if __ROS2__:
+        # make multi pos
+        _spline_posj = _ros_listToFloat64MultiArray(pos_list)
+        #srv = _ros_movesj(_spline_posj, len(_spline_posj), _vel, _acc, _time, mod, _async)
+
+        req = MoveSplineJoint.Request()
+
+        req.pos         = _spline_posj               #??? 검증필요!
+        req.pos_cnt     = len(_spline_posj)
+
+        if type(_vel) == list:
+            _vel = float(_vel[0]) 
+        if type(_acc) == list:
+            _acc = float(_acc[0]) 
+        req.vel         = _vel #[float(x) for x in _vel]
+        req.acc         = _acc #[float(x) for x in _acc]
+
+        req.time        = float(_time)
+        req.mode        = int(mod)
+        req.sync_type   = int(_async)
+
+        #RRR ret = 0 if (srv.success == True) else -1
+        future = _ros2_movesj.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('movesj Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1                
+    else:    
+        ret = PythonMgr.py_movesj(pos_list, _vel, _acc, _time, mod, _async)
+        print_ext_result("{0} = PythonMgr.py_movesj(pos_list:{1}, vel:{2}, acc:{3}, time:{4}, mod:{5} async:{6})" \
+                         .format(ret, dr_form(pos_list), dr_form(_vel), dr_form(_acc), _time, mod, _async))
+    return ret
+
+
+
+def movesx(pos_list, vel=None, acc=None, time=None, ref=None, mod= DR_MV_MOD_ABS, vel_opt=DR_MVS_VEL_NONE, v=None, a=None, t=None):
+    ret = _movesx(pos_list, vel, acc, time, ref, mod, vel_opt, v, a, t, _async=0)
+    return ret
+def amovesx(pos_list, vel=None, acc=None, time=None, ref=None, mod= DR_MV_MOD_ABS, vel_opt=DR_MVS_VEL_NONE, v=None, a=None, t=None):
+    ret = _movesx(pos_list, vel, acc, time, ref, mod, vel_opt, v, a, t, _async=1)
+    return ret
+def _movesx(pos_list, vel=None, acc=None, time=None, ref=None, mod= DR_MV_MOD_ABS, vel_opt=DR_MVS_VEL_NONE, v=None, a=None, t=None, _async=0):
+    # pos_list
+    if type(pos_list) != list:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list")
+
+    for item in pos_list:
+        if type(item) != posx:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list [item]")
+
+    # _vel
+    temp = get_param(vel, v)
+    if temp == None:
+        _vel = _g_velx
+    else:
+        if type(temp) == int or type(temp) == float:
+            #_vel = [temp] * DR_VELX_DT_LEN #<����> ���� �� �ΰ� ����
+            _vel = [0] * DR_VELX_DT_LEN     #<����> _vel[0]=temp, _vel[1]= DR_COND_NONE
+            _vel[0] = temp
+            _vel[1] = DR_COND_NONE
+        elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+            _vel = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+    if is_number(_vel) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    for item in _vel:
+        #if item < 0:
+        if (item < 0) and (item != DR_COND_NONE):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    # _acc
+    temp = get_param(acc, a)
+    if temp == None:
+        _acc = _g_accx
+    else:
+        if type(temp) == int or type(temp) == float:
+            #_acc = [temp] * DR_ACCX_DT_LEN #<����> ���� �� �ΰ� ����
+            _acc = [0] * DR_ACCX_DT_LEN     #<����> _acc[0]=temp, _acc[1]= DR_COND_NONE
+            _acc[0] = temp
+            _acc[1] = DR_COND_NONE
+        elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+            _acc = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+    if is_number(_acc) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    for item in _acc:
+        #if item < 0:
+        if (item < 0) and (item != DR_COND_NONE):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    # _time
+    _time = get_param(time, t)
+    if _time == None:
+        _time = 0.0
+
+    if type(_time) != int and type(_time) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+    if _time < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+    # check vel, acc, time
+    #_check_valid_vel_acc(_vel, _acc, _time)
+    _check_valid_vel_acc_task(_vel, _acc, _time)
+
+    # _ref
+    if ref == None:
+        _ref = _g_coord
+    else:
+        _ref = ref
+
+    # check ref
+    if type(_ref) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+    if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+    # mod
+    if type(mod) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+    if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+    # vel_opt
+    if type(vel_opt) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel_opt")
+
+    if vel_opt != DR_MVS_VEL_NONE and vel_opt != DR_MVS_VEL_CONST:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel_opt")
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS service call
+    if __ROS2__:
+        # make multi pos
+        _spline_posx = _ros_listToFloat64MultiArray(pos_list)
+        #srv = _ros_movesx(_spline_posx, len(_spline_posx), _vel, _acc, _time, mod, _ref, vel_opt, _async)
+        req = MoveSplineTask.Request()
+        req.pos         = _spline_posx               #??? 검증필요!
+        req.pos_cnt     = len(_spline_posx)
+        req.vel         = [float(x) for x in _vel]
+        req.acc         = [float(x) for x in _acc]
+        req.time        = float(_time)
+        req.ref         = int(_ref)
+        req.mode        = int(mod)
+        req.opt         = int(vel_opt)
+        req.sync_type   = int(_async)
+
+        #RRR ret = 0 if (srv.success == True) else -1
+        future = _ros2_movesx.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('movesx Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1                
+    else:
+        ret = PythonMgr.py_movesx(pos_list, _vel, _acc, _time, _ref, mod, vel_opt, _async)
+        print_ext_result("{0} = PythonMgr.py_movesx(pos_list:{1}, vel:{2}, acc:{3}, time:{4}, ref:{5}, mod:{6}, vel_opt:{7}, async:{8})" \
+                        .format(ret, dr_form(pos_list), dr_form(_vel), dr_form(_acc), _time, _ref, mod, vel_opt, _async))
+    return ret
+
+def moveb(seg_list, vel=None, acc=None, ref=None, time=None, mod=DR_MV_MOD_ABS, v=None, a=None, t=None):
+    ret = _moveb(seg_list, vel, acc, ref, time, mod, v, a, t, _async=0)
+    return ret
+def amoveb(seg_list, vel=None, acc=None, ref=None, time=None, mod=DR_MV_MOD_ABS, v=None, a=None, t=None):
+    ret = _moveb(seg_list, vel, acc, ref, time, mod, v, a, t, _async=1)
+    return ret
+def _moveb(seg_list, vel=None, acc=None, ref=None, time=None, mod=DR_MV_MOD_ABS, v=None, a=None, t=None, _async=0):
+
+    # seg_list
+    if type(seg_list) != list:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : seg_list")
+
+    if len(seg_list) == 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : seg_list")
+
+    _seg_list = []
+    if __ROS2__:
+        for seg in seg_list:
+            _seg_list.append(seg.to_list())
+    else:
+        for seg in seg_list:
+            if type(seg) != posb:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : seg_list(item)")
+            else:
+                _seg_list.append(seg.to_list())
+
+    if __ROS2__:
+        print(len(_seg_list))
+        _ros_seg_list = []
+        _tmp_list = []
+
+        for s in range(0, len(_seg_list)):
+            #print(s)
+            for elemnt in range(0, len(_seg_list[s])):
+                if _seg_list[s][elemnt] == None:
+                    _seg_list[s][elemnt] = [0.0]*POINT_COUNT
+         
+            # make [pos1] + [pos2] + [type] + [radius]
+            _tmp_list = _seg_list[s][1] + _seg_list[s][2] + [_seg_list[s][0]] + [_seg_list[s][3]]
+            _ros_seg_list.append(_tmp_list)
+            
+    # _vel
+    temp = get_param(vel, v)
+    if temp == None:
+        _vel = _g_velx
+    else:
+        if type(temp) == int or type(temp) == float:
+            #_vel = [temp] * DR_VELX_DT_LEN #<����> ���� �� �ΰ� ����
+            _vel = [0] * DR_VELX_DT_LEN     #<����> _vel[0]=temp, _vel[1]= DR_COND_NONE
+            _vel[0] = temp
+            _vel[1] = DR_COND_NONE
+        elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+            _vel = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+    if is_number(_vel) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    for item in _vel:
+        #if item < 0:
+        if (item < 0) and (item != DR_COND_NONE):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    # _acc
+    temp = get_param(acc, a)
+    if temp == None:
+        _acc = _g_accx
+    else:
+        if type(temp) == int or type(temp) == float:
+            #_acc = [temp] * DR_ACCX_DT_LEN #<����> ���� �� �ΰ� ����
+            _acc = [0] * DR_ACCX_DT_LEN     #<����> _acc[0]=temp, _acc[1]= DR_COND_NONE
+            _acc[0] = temp
+            _acc[1] = DR_COND_NONE
+        elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+            _acc = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+    if is_number(_acc) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    for item in _acc:
+        #if item < 0:
+        if (item < 0) and (item != DR_COND_NONE):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    # _time
+    _time = get_param(time, t)
+    if _time == None:
+        _time = 0.0
+
+    # check vel, acc, time
+    #_check_valid_vel_acc(_vel, _acc, _time)
+    _check_valid_vel_acc_task(_vel, _acc, _time)
+
+    # ref
+    if ref == None:
+        _ref = _g_coord
+    else:
+        _ref = ref
+
+    # check ref
+    if type(_ref) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+    if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+    # mod
+    if type(mod) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+    if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS Service call
+    if __ROS2__:
+        seg = _ros_listToFloat64MultiArray(_ros_seg_list)
+        #srv = _ros_moveb(seg, len(_ros_seg_list), _vel, _acc, _time, mod, _ref, _async)    
+        req = MoveBlending.Request()
+        req.segment     = seg               #??? 검증필요!
+        req.pos_cnt     = len(_ros_seg_list)
+        req.vel         = [float(x) for x in _vel]
+        req.acc         = [float(x) for x in _acc]
+        req.time        = float(_time)
+        req.ref         = int(_ref)
+        req.mode        = int(mod)
+        req.sync_type   = int(_async)
+
+        #RRR ret = 0 if (srv.success == True) else -1
+        future = _ros2_moveb.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('moveb Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1                
+    else:
+        ret = PythonMgr.py_moveb(_seg_list, _vel, _acc, _time, _ref, mod, _async)
+        print_ext_result("{0} = PythonMgr.py_moveb(seg_list:{1}, vel:{2}, acc:{3}, time:{4}, ref:{5}, mod:{6}, async:{7})" \
+                         .format(ret, dr_form(_seg_list), dr_form(_vel), dr_form(_acc), _time, _ref, mod, _async))
+    return ret
+
+
+def move_spiral(rev=10, rmax=10, lmax=0, vel=None, acc=None, time=None, axis=DR_AXIS_Z, ref=DR_TOOL, v=None, a=None, t=None):
+    ret = _move_spiral(rev, rmax, lmax, vel, acc, time, axis, ref, v, a, t, _async=0)
+    return ret
+def amove_spiral(rev=10, rmax=10, lmax=0, vel=None, acc=None, time=None, axis=DR_AXIS_Z, ref=DR_TOOL, v=None, a=None, t=None):
+    ret = _move_spiral(rev, rmax, lmax, vel, acc, time, axis, ref, v, a, t, _async=1)
+    return ret
+def _move_spiral(rev=10, rmax=10, lmax=0, vel=None, acc=None, time=None, axis=DR_AXIS_Z, ref=DR_TOOL, v=None, a=None, t=None, _async=0):
+    # rev
+    if type(rev) != int and type(rev) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : rev")
+
+    if rev <= 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : rev (Ranges: rev > 0)")
+
+    # rmax
+    if type(rmax) != int and type(rmax) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : rmax")
+
+    if rmax <= 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value: rmax (Ranges: rmax > 0)")
+
+    # lmax
+    if type(lmax) != int and type(lmax) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : lmax")
+
+    # _vel
+    temp = get_param(vel, v)
+    if temp == None:
+        _vel = _g_velx
+    else:
+        if type(temp) == int or type(temp) == float:
+            _vel = [temp] * DR_VELX_DT_LEN
+        elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+            _vel = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+    if is_number(_vel) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    for item in _vel:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+    # _acc
+    temp = get_param(acc, a)
+    if temp == None:
+        _acc = _g_accx
+    else:
+        if type(temp) == int or type(temp) == float:
+            _acc = [temp] * DR_ACCX_DT_LEN
+        elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+            _acc = temp
+        else:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+    if is_number(_acc) != True:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    for item in _acc:
+        if item < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+    # _time
+    _time = get_param(time, t)
+    if _time == None:
+        _time = 0.0
+
+    if type(_time) != int and type(_time) != float:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+    if _time < 0:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+    # check vel, acc, time
+    #_check_valid_vel_acc(_vel, _acc, _time)
+    _check_valid_vel_acc_joint(_vel, _acc, _time)
+
+    # axis
+    if type(axis) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : axis")
+
+    if axis != DR_AXIS_X and axis != DR_AXIS_Y and axis != DR_AXIS_Z:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : axis")
+
+    # ref
+    if type(ref) != int:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+    if ref != DR_BASE and ref != DR_TOOL and (ref < DR_TC_USER_MIN or ref > DR_TC_USER_MAX):
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS service call
+    if __ROS2__:
+        #srv = _ros_move_spiral(rev, rmax, lmax, _vel, _acc, _time, axis, ref, _async)
+        req = MoveSpiral.Request()
+        req.revolution  = rev               #??? 검증필요!
+        req.max_radius  = float(rmax)
+        req.max_length  = float(lmax)
+        req.vel         = [float(x) for x in _vel]
+        req.acc         = [float(x) for x in _acc]
+        req.time        = float(_time)
+        req.task_axis   = int(axis)
+        req.ref         = int(ref)
+        req.sync_type   = int(_async)
+
+        #RRR ret = 0 if (srv.success == True) else -1
+        future = _ros2_move_spiral.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('move_spiral Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1     
+    else:    
+        ret = PythonMgr.py_move_spiral(rev, rmax, lmax, _vel, _acc, _time, axis, ref, _async)
+        print_ext_result("{0} = PythonMgr.py_move_spiral(rev:{1}, rmax:{2}, lmax:{3}, vel:{4}, acc:{5}, time:{6}, axis:{7}, ref:{8}, async:{9})" \
+                         .format(ret, dr_form(rev), dr_form(rmax), dr_form(lmax), dr_form(_vel), dr_form(_acc), _time, axis, ref, _async))    
+    return ret
+
+
+
+def move_periodic(amp, period, atime=None, repeat=None, ref=DR_TOOL):
+    ret = _move_periodic(amp, period, atime, repeat, ref, _async=0)
+    return ret
+def amove_periodic(amp, period, atime=None, repeat=None, ref=DR_TOOL):
+    ret = _move_periodic(amp, period, atime, repeat, ref, _async=1)
+    return ret
+def _move_periodic(amp, period, atime=None, repeat=None, ref=DR_TOOL, _async=0):
+    _amp = [POINT_COUNT]
+    _period = [POINT_COUNT]
+    _atime =0.0
+    _repeat =0.0
+    _ref=0 
+
+    # amp : float[6] 
+    if type(amp) != list:
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : amp")
+    if len(amp) != POINT_COUNT:
+        raise DR_Error(DR_ERROR_VALUE, "Invalid value : amp")
+    _amp =amp
+
+    # period : float or float[6] 
+    if (type(period) != int) and (type(period) != float) and (type(period) != list):
+        raise DR_Error(DR_ERROR_TYPE, "Invalid type : period")
+
+    if (type(period) == int) or (type(period) == float):
+        _period = [period] * POINT_COUNT
+    else: #list �� ��� 
+        if len(period) != POINT_COUNT:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : period")
+        _period = period
+
+    # atime 
+    if atime == None:
+        _atime = 0.0
+    else:
+        if (type(atime) != int) and (type(atime) != float):
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : atime")
+        if atime < 0.0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : atime")
+        _atime = atime
+
+    # repeat 
+    if repeat == None:
+        _repeat = 1
+    else:
+        if (type(repeat) != int) and (type(repeat) != float): 
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : repeat")
+        if repeat < 0.0: 
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : repeat")
+        _repeat = repeat
+
+    # ref
+    if ref == None:
+        #_ref = _g_coord
+        _ref = DR_TOOL
+    else:
+        if type(ref) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+        if ref < DR_BASE or ref > DR_TC_USER_MAX:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+        _ref = ref
+
+    # _async
+    if 1 == _async:
+        _radius = 0   
+
+    # ROS service call
+    if __ROS2__:
+        #srv = _ros_move_periodic(_amp, _period, _atime, _repeat, _ref, _async)    
+        req = MovePeriodic.Request()
+        req.amp         = [float(x) for x in _amp]
+        req.periodic    = [float(x) for x in _period]
+        req.acc         = float(_atime)
+        req.repeat      = int(_repeat)
+        req.ref         = int(_ref)
+        req.sync_type   = int(_async)
+
+        #RRR ret = 0 if (srv.success == True) else -1
+        future = _ros2_move_periodic.call_async(req)
+        rclpy.spin_until_future_complete(g_node, future)
+
+        try:
+            result = future.result()
+        except Exception as e:
+            g_node.get_logger().info('move_periodic Service call failed %r' % (e,))
+        else:
+            if result == None:
+                ret = -1    
+            else:        
+                ret = 0 if (result.success == True) else -1     
+
+    else:
+        ret = PythonMgr.py_move_periodic(_amp, _period, _atime, _repeat, _ref, _async)
+        print_ext_result("{0} = PythonMgr.move_periodic(amp:{1}, period:{2}, atime:{3}, repeat{4}, ref:{5}, async:{6})" \
+                         .format(ret, dr_form(_amp), dr_form(_period), _atime, _repeat, _ref, _async))
+    return ret
+
+
+
+
+
+
 ########################################################################################################################################
 ########################################################################################################################################
 ########################################################################################################################################
@@ -905,12 +1905,131 @@ class CDsrRobot:
         #rospy.wait_for_service(self._srv_name_prefix +"/motion/move_joint")
         
         # system Operations
-        self._ros2_set_robot_mode            = g_node.create_client(SetRobotMode, self._srv_name_prefix +"/system/set_robot_mode") ; self.req_SetRobotMode = SetRobotMode.Request()
+        self._ros2_set_robot_mode             = g_node.create_client(SetRobotMode, self._srv_name_prefix +"/system/set_robot_mode") ; self.req_SetRobotMode = SetRobotMode.Request()
+        self._ros2_get_robot_mode             = g_node.create_client(GetRobotMode, self._srv_name_prefix +"/system/get_robot_mode") ; self.req_GetRobotMode = GetRobotMode.Request()
+        self._ros2_set_robot_system           = g_node.create_client(SetRobotSystem, self._srv_name_prefix +"/system/set_robot_system") ; self.req_SetRobotSystem = SetRobotSystem.Request()
+        self._ros2_get_robot_system           = g_node.create_client(GetRobotSystem, self._srv_name_prefix +"/system/get_robot_system") ; self.req_GetRobotSystem = GetRobotSystem.Request()
+        self._ros2_get_robot_state            = g_node.create_client(GetRobotState, self._srv_name_prefix +"/system/get_robot_state") ; self.req_GetRobotState = GetRobotState.Request()
+        self._ros2_set_robot_speed_mode       = g_node.create_client(SetRobotSpeedMode, self._srv_name_prefix +"/system/set_robot_speed_mode") ; self.req_SetRobotSpeedMode = SetRobotSpeedMode.Request()
+        self._ros2_get_robot_speed_mode       = g_node.create_client(GetRobotSpeedMode, self._srv_name_prefix +"/system/get_robot_speed_mode") ; self.req_GetRobotSpeedMode = GetRobotSpeedMode.Request()
+        self._ros2_set_safe_stop_reset_type   = g_node.create_client(SetSafeStopResetType, self._srv_name_prefix +"/system/set_safe_stop_reset_type") ; self.req_SetSafeStopResetType = SetSafeStopResetType.Request()
+        self._ros2_get_last_alarm             = g_node.create_client(GetLastAlarm, self._srv_name_prefix +"/system/get_last_alarm") ; self.req_GetLastAlarm = GetLastAlarm.Request()
+        self._ros2_get_current_pose           = g_node.create_client(GetCurrentPose, self._srv_name_prefix +"/system/get_current_pose") ; self.req_GetCurrentPose = GetCurrentPose.Request()
 
     
         #  motion Operations
-        self._ros2_movej                     = g_node.create_client(MoveJoint, self._srv_name_prefix +"/motion/move_joint") ; self.req_MoveJoint = MoveJoint.Request()
-        self._ros2_movel                     = g_node.create_client(MoveLine,  self._srv_name_prefix +"/motion/move_line")  ; self.req_MoveLine  = MoveLine.Request()
+        self._ros2_movej                      = g_node.create_client(MoveJoint,              self._srv_name_prefix +"/motion/move_joint") ; self.req_MoveJoint = MoveJoint.Request()
+        self._ros2_movel                      = g_node.create_client(MoveLine,               self._srv_name_prefix +"/motion/move_line") ; self.req_MoveLine = MoveLine.Request()
+        self._ros2_movejx                     = g_node.create_client(MoveJointx,             self._srv_name_prefix +"/motion/move_jointx") ; self.req_MoveJointx = MoveJointx.Request()
+        self._ros2_movec                      = g_node.create_client(MoveCircle,             self._srv_name_prefix +"/motion/move_circle") ; self.req_MoveCircle = MoveCircle.Request()
+        self._ros2_movesj                     = g_node.create_client(MoveSplineJoint,        self._srv_name_prefix +"/motion/move_spline_joint") ; self.req_MoveSplineJoint = MoveSplineJoint.Request() 
+        self._ros2_movesx                     = g_node.create_client(MoveSplineTask,         self._srv_name_prefix +"/motion/move_spline_task") ; self.req_MoveSplineTask = MoveSplineTask.Request()
+        self._ros2_moveb                      = g_node.create_client(MoveBlending,           self._srv_name_prefix +"/motion/move_blending") ; self.req_MoveBlending = MoveBlending.Request()
+        self._ros2_move_spiral                = g_node.create_client(MoveSpiral,             self._srv_name_prefix +"/motion/move_spiral") ; self.req_MoveSpiral = MoveSpiral.Request()
+        self._ros2_move_periodic              = g_node.create_client(MovePeriodic,           self._srv_name_prefix +"/motion/move_periodic") ; self.req_MovePeriodic = MovePeriodic.Request()
+        self._ros2_move_wait                  = g_node.create_client(MoveWait,               self._srv_name_prefix +"/motion/move_wait") ; self.req_MoveWait = MoveWait.Request()
+        self._ros2_jog                        = g_node.create_client(Jog,                    self._srv_name_prefix +"/motion/jog") ; self.req_Jog = Jog.Request()
+        self._ros2_jog_multi                  = g_node.create_client(JogMulti,               self._srv_name_prefix +"/motion/jog_multi") ; self.req_JogMulti = JogMulti.Request()
+        self._ros2_trans                      = g_node.create_client(Trans,                  self._srv_name_prefix +"/motion/trans") ; self.req_Trans = Trans.Request()
+        self._ros2_fkin                       = g_node.create_client(Fkin,                   self._srv_name_prefix +"/motion/fkin") ; self.req_Fkin = Fkin.Request()
+        self._ros2_ikin                       = g_node.create_client(Ikin,                   self._srv_name_prefix +"/motion/ikin") ; self.req_SetRefCoord = Ikin.Request()
+        self._ros2_set_ref_coord              = g_node.create_client(SetRefCoord,            self._srv_name_prefix +"/motion/set_ref_coord") ; self.req_SetRefCoord = SetRefCoord.Request()
+        self._ros2_move_home                  = g_node.create_client(MoveHome,               self._srv_name_prefix +"/motion/move_home") ; self.req_MoveHome = MoveHome.Request()
+        self._ros2_check_motion               = g_node.create_client(CheckMotion,            self._srv_name_prefix +"/motion/check_motion") ; self.req_CheckMotion = CheckMotion.Request()
+        self._ros2_change_operation_speed     = g_node.create_client(ChangeOperationSpeed,   self._srv_name_prefix +"/motion/change_operation_speed") ; self.req_ChangeOperationSpeed = ChangeOperationSpeed.Request()
+        self._ros2_enable_alter_motion        = g_node.create_client(EnableAlterMotion,      self._srv_name_prefix +"/motion/enable_alter_motion") ; self.req_EnableAlterMotion = EnableAlterMotion.Request()
+        self._ros2_alter_motion               = g_node.create_client(AlterMotion,            self._srv_name_prefix +"/motion/alter_motion") ; self.req_AlterMotion = AlterMotion.Request()
+        self._ros2_disable_alter_motion       = g_node.create_client(DisableAlterMotion,     self._srv_name_prefix +"/motion/disable_alter_motion") ; self.req_DisableAlterMotion = DisableAlterMotion.Request()
+
+
+        # Auxiliary Control Operations
+        self._ros2_get_control_mode               = g_node.create_client(GetControlMode,     self._srv_name_prefix +"/aux_control/get_control_mode") ; self.req_GetControlMode = GetControlMode.Request()
+        self._ros2_get_control_space              = g_node.create_client(GetControlSpace,    self._srv_name_prefix +"/aux_control/get_control_space") ; self.req_GetControlSpace = GetControlSpace.Request()
+    
+        self._ros2_get_current_posj               = g_node.create_client(GetCurrentPosj,     self._srv_name_prefix +"/aux_control/get_current_posj") ; self.req_GetCurrentPosj = GetCurrentPosj.Request()
+        self._ros2_get_current_velj               = g_node.create_client(GetCurrentVelj,     self._srv_name_prefix +"/aux_control/get_current_velj") ; self.req_GetCurrentVelj = GetCurrentVelj.Request()
+        self._ros2_get_desired_posj               = g_node.create_client(GetDesiredPosj,     self._srv_name_prefix +"/aux_control/get_desired_posj") ; self.req_GetDesiredPosj = GetDesiredPosj.Request()
+        self._ros2_get_desired_velj               = g_node.create_client(GetDesiredVelj,     self._srv_name_prefix +"/aux_control/get_desired_velj") ; self.req_GetDesiredVelj = GetDesiredVelj.Request()
+    
+        self._ros2_get_current_posx               = g_node.create_client(GetCurrentPosx,     self._srv_name_prefix +"/aux_control/get_current_posx") ; self.req_GetCurrentPosx = GetCurrentPosx.Request()
+        self._ros2_get_current_velx               = g_node.create_client(GetCurrentVelx,     self._srv_name_prefix +"/aux_control/get_current_velx") ; self.req_GetCurrentVelx = GetCurrentVelx.Request()
+        self._ros2_get_desired_posx               = g_node.create_client(GetDesiredPosx,     self._srv_name_prefix +"/aux_control/get_desired_posx") ; self.req_GetDesiredPosx = GetDesiredPosx.Request()
+        self._ros2_get_desired_velx               = g_node.create_client(GetDesiredVelx,     self._srv_name_prefix +"/aux_control/get_desired_velx") ; self.req_GetDesiredVelx = GetDesiredVelx.Request()
+     
+        self._ros2_get_current_tool_flange_posx   = g_node.create_client(GetCurrentToolFlangePosx,   self._srv_name_prefix +"/aux_control/get_current_tool_flange_posx") ; self.req_GetCurrentToolFlangePosx = GetCurrentToolFlangePosx.Request()
+     
+        self._ros2_get_current_solution_space     = g_node.create_client(GetCurrentSolutionSpace,    self._srv_name_prefix +"/aux_control/get_current_solution_space") ; self.req_GetCurrentSolutionSpace = GetCurrentSolutionSpace.Request()
+        self._ros2_get_current_rotm               = g_node.create_client(GetCurrentRotm,             self._srv_name_prefix +"/aux_control/get_current_rotm") ; self.req_GetCurrentRotm = GetCurrentRotm.Request()
+        self._ros2_get_joint_torque               = g_node.create_client(GetJointTorque,             self._srv_name_prefix +"/aux_control/get_joint_torque") ; self.req_GetJointTorque = GetJointTorque.Request()
+        self._ros2_get_external_torque            = g_node.create_client(GetExternalTorque,          self._srv_name_prefix +"/aux_control/get_external_torque") ; self.req_GetExternalTorque = GetExternalTorque.Request()
+        self._ros2_get_tool_force                 = g_node.create_client(GetToolForce,               self._srv_name_prefix +"/aux_control/get_tool_force") ; self.req_GetToolForce = GetToolForce.Request()
+        self._ros2_get_solution_space             = g_node.create_client(GetSolutionSpace,           self._srv_name_prefix +"/aux_control/get_solution_space") ; self.req_GetSolutionSpace = GetSolutionSpace.Request()
+        self._ros2_get_orientation_error          = g_node.create_client(GetOrientationError,        self._srv_name_prefix +"/aux_control/get_orientation_error") ; self.req_GetOrientationError = GetOrientationError.Request()
+
+        # Force/Stiffness Control & others Operations
+        self._ros2_get_workpiece_weight        = g_node.create_client(GetWorkpieceWeight,            self._srv_name_prefix +"/force/get_workpiece_weight") ; self.req_GetWorkpieceWeight = GetWorkpieceWeight.Request()
+        self._ros2_reset_workpiece_weight      = g_node.create_client(ResetWorkpieceWeight,          self._srv_name_prefix +"/force/reset_workpiece_weight") ; self.req_ResetWorkpieceWeight = ResetWorkpieceWeight.Request()
+        self._ros2_set_singularity_handling    = g_node.create_client(SetSingularityHandling,        self._srv_name_prefix +"/motion/set_singularity_handling") ; self.req_SetSingularityHandling = SetSingularityHandling.Request()
+
+        self._ros2_parallel_axis1              = g_node.create_client(ParallelAxis1,                 self._srv_name_prefix +"/force/parallel_axis1") ; self.req_ParallelAxis1 = ParallelAxis1.Request()
+        self._ros2_parallel_axis2              = g_node.create_client(ParallelAxis2,                 self._srv_name_prefix +"/force/parallel_axis2") ; self.req_ParallelAxis2 = ParallelAxis2.Request()
+        self._ros2_align_axis1                 = g_node.create_client(AlignAxis1,                    self._srv_name_prefix +"/force/align_axis1") ; self.req_AlignAxis1 = AlignAxis1.Request()
+        self._ros2_align_axis2                 = g_node.create_client(AlignAxis2,                    self._srv_name_prefix +"/force/align_axis2") ; self.req_AlignAxis2 = AlignAxis2.Request()
+        self._ros2_is_done_bolt_tightening     = g_node.create_client(IsDoneBoltTightening,          self._srv_name_prefix +"/force/is_done_bolt_tightening") ; self.req_IsDoneBoltTightening = IsDoneBoltTightening.Request()
+        self._ros2_release_compliance_ctrl     = g_node.create_client(ReleaseComplianceCtrl,         self._srv_name_prefix +"/force/release_compliance_ctrl") ; self.req_ReleaseComplianceCtrl = ReleaseComplianceCtrl.Request()
+        self._ros2_task_compliance_ctrl        = g_node.create_client(TaskComplianceCtrl,            self._srv_name_prefix +"/force/task_compliance_ctrl") ; self.req_TaskComplianceCtrl = TaskComplianceCtrl.Request()
+        self._ros2_set_stiffnessx              = g_node.create_client(SetStiffnessx,                 self._srv_name_prefix +"/force/set_stiffnessx") ; self.req_SetStiffnessx = SetStiffnessx.Request()
+        self._ros2_calc_coord                  = g_node.create_client(CalcCoord,                     self._srv_name_prefix +"/force/calc_coord") ; self.req_CalcCoord = CalcCoord.Request()
+        self._ros2_set_user_cart_coord1        = g_node.create_client(SetUserCartCoord1,             self._srv_name_prefix +"/force/set_user_cart_coord1") ; self.req_SetUserCartCoord1 = SetUserCartCoord1.Request()
+        self._ros2_set_user_cart_coord2        = g_node.create_client(SetUserCartCoord2,             self._srv_name_prefix +"/force/set_user_cart_coord2") ; self.req_SetUserCartCoord2 = SetUserCartCoord2.Request()
+        self._ros2_set_user_cart_coord3        = g_node.create_client(SetUserCartCoord3,             self._srv_name_prefix +"/force/set_user_cart_coord3") ; self.req_SetUserCartCoord3 = SetUserCartCoord3.Request()
+        self._ros2_overwrite_user_cart_coord   = g_node.create_client(OverwriteUserCartCoord,        self._srv_name_prefix +"/force/overwrite_user_cart_coord") ; self.req_OverwriteUserCartCoord = OverwriteUserCartCoord.Request()
+        self._ros2_get_user_cart_coord         = g_node.create_client(GetUserCartCoord,              self._srv_name_prefix +"/force/get_user_cart_coord") ; self.req_GetUserCartCoord = GetUserCartCoord.Request()
+        self._ros2_set_desired_force           = g_node.create_client(SetDesiredForce,               self._srv_name_prefix +"/force/set_desired_force") ; self.req_SetDesiredForce = SetDesiredForce.Request()
+        self._ros2_release_force               = g_node.create_client(ReleaseForce,                  self._srv_name_prefix +"/force/release_force") ; self.req_ReleaseForce = ReleaseForce.Request()
+        self._ros2_check_position_condition    = g_node.create_client(CheckPositionCondition,        self._srv_name_prefix +"/force/check_position_condition") ; self.req_CheckPositionCondition = CheckPositionCondition.Request()
+        self._ros2_check_force_condition       = g_node.create_client(CheckForceCondition,           self._srv_name_prefix +"/force/check_force_condition") ; self.req_CheckForceCondition = CheckForceCondition.Request()
+        self._ros2_check_orientation_condition1= g_node.create_client(CheckOrientationCondition1,    self._srv_name_prefix +"/force/check_orientation_condition1") ; self.req_CheckOrientationCondition1 = CheckOrientationCondition1.Request()
+        self._ros2_check_orientation_condition2= g_node.create_client(CheckOrientationCondition2,    self._srv_name_prefix +"/force/check_orientation_condition2") ; self.req_CheckOrientationCondition2 = CheckOrientationCondition2.Request()
+        self._ros2_coord_transform             = g_node.create_client(CoordTransform,                self._srv_name_prefix +"/force/coord_transform") ; self.req_CoordTransform = CoordTransform.Request()
+
+        #  GPIO Operations
+        self._ros2_set_digital_output         = g_node.create_client(SetCtrlBoxDigitalOutput,        self._srv_name_prefix +"/io/set_digital_output") ; self.req_SetCtrlBoxDigitalOutput = SetCtrlBoxDigitalOutput.Request()
+        self._ros2_get_digital_input          = g_node.create_client(GetCtrlBoxDigitalInput,         self._srv_name_prefix +"/io/get_digital_input") ; self.req_GetCtrlBoxDigitalInput = GetCtrlBoxDigitalInput.Request()
+        self._ros2_set_tool_digital_output    = g_node.create_client(SetToolDigitalOutput,           self._srv_name_prefix +"/io/set_tool_digital_output") ; self.req_SetToolDigitalOutput= SetToolDigitalOutput.Request()
+        self._ros2_get_tool_digital_input     = g_node.create_client(GetToolDigitalInput,            self._srv_name_prefix +"/io/get_tool_digital_input") ; self.req_GetToolDigitalInput = GetToolDigitalInput.Request()
+        self._ros2_set_analog_output          = g_node.create_client(SetCtrlBoxAnalogOutput,         self._srv_name_prefix +"/io/set_analog_output") ; self.req_SetCtrlBoxAnalogOutput = SetCtrlBoxAnalogOutput.Request()
+        self._ros2_get_analog_input           = g_node.create_client(GetCtrlBoxAnalogInput,          self._srv_name_prefix +"/io/get_analog_input") ; self.req_GetCtrlBoxAnalogInput = GetCtrlBoxAnalogInput.Request()
+        self._ros2_set_mode_analog_output     = g_node.create_client(SetCtrlBoxAnalogOutputType,     self._srv_name_prefix +"/io/set_analog_output_type") ; self.req_SetCtrlBoxAnalogOutputType = SetCtrlBoxAnalogOutputType.Request()
+        self._ros2_set_mode_analog_input      = g_node.create_client(SetCtrlBoxAnalogInputType,      self._srv_name_prefix +"/io/set_analog_input_type") ; self.req_SetCtrlBoxAnalogInputType = SetCtrlBoxAnalogInputType.Request()
+        self._ros2_get_digital_output         = g_node.create_client(GetCtrlBoxDigitalOutput,        self._srv_name_prefix +"/io/get_digital_output") ; self.req_GetCtrlBoxDigitalOutput = GetCtrlBoxDigitalOutput.Request()
+        self._ros2_get_tool_digital_output    = g_node.create_client(GetToolDigitalOutput,           self._srv_name_prefix +"/io/get_tool_digital_output") ; self.req_GetToolDigitalOutput = GetToolDigitalOutput.Request()
+ 
+        #  Modbus Operations, 
+        self._ros2_set_modbus_output          = g_node.create_client(SetModbusOutput,                self._srv_name_prefix +"/modbus/set_modbus_output") ; self.req_SetModbusOutput = SetModbusOutput.Request()
+        self._ros2_get_modbus_input           = g_node.create_client(GetModbusInput,                 self._srv_name_prefix +"/modbus/get_modbus_input") ; self.req_GetModbusInput = GetModbusInput.Request()
+        self._ros2_add_modbus_signal          = g_node.create_client(ConfigCreateModbus,             self._srv_name_prefix +"/modbus/config_create_modbus") ; self.req_ConfigCreateModbus = ConfigCreateModbus.Request()
+        self._ros2_del_modbus_signal          = g_node.create_client(ConfigDeleteModbus,             self._srv_name_prefix +"/modbus/config_delete_modbus") ; self.req_ConfigDeleteModbus = ConfigDeleteModbus.Request()
+
+        # TCP Operations, 
+        self._ros2_set_current_tcp            = g_node.create_client(SetCurrentTcp,                  self._srv_name_prefix +"/tcp/set_current_tcp") ; self.req_SetCurrentTcp = SetCurrentTcp.Request()
+        self._ros2_get_current_tcp            = g_node.create_client(GetCurrentTcp,                  self._srv_name_prefix +"/tcp/get_current_tcp") ; self.req_GetCurrentTcp = GetCurrentTcp.Request()
+        self._ros2_config_create_tcp          = g_node.create_client(ConfigCreateTcp,                self._srv_name_prefix +"/tcp/config_create_tcp") ; self.req_ConfigCreateTcp = ConfigCreateTcp.Request()
+        self._ros2_config_delete_tcp          = g_node.create_client(ConfigDeleteTcp,                self._srv_name_prefix +"/tcp/config_delete_tcp") ; self.req_ConfigDeleteTcp = ConfigDeleteTcp.Request()
+ 
+        # Tool Operations, 
+        self._ros2_set_current_tool           = g_node.create_client(SetCurrentTool,                 self._srv_name_prefix +"/tool/set_current_tool") ; self.req_SetCurrentTool = SetCurrentTool.Request()
+        self._ros2_get_current_tool           = g_node.create_client(GetCurrentTool,                 self._srv_name_prefix +"/tool/get_current_tool") ; self.req_GetCurrentTool = GetCurrentTool.Request()
+        self._ros2_config_create_tool         = g_node.create_client(ConfigCreateTool,               self._srv_name_prefix +"/tool/config_create_tool") ; self.req_ConfigCreateTool = ConfigCreateTool.Request()
+        self._ros2_config_delete_tool         = g_node.create_client(ConfigDeleteTool,               self._srv_name_prefix +"/tool/config_delete_tool") ; self.req_ConfigDeleteTool = ConfigDeleteTool.Request()
+        self._ros2_set_tool_shape             = g_node.create_client(SetToolShape,                   self._srv_name_prefix +"/tool/set_tool_shape") ; self.req_SetToolShape = SetToolShape.Request()
+
+        # DRL Operations, 
+        self._ros2_drl_pause                  = g_node.create_client(DrlPause,                       self._srv_name_prefix +"/drl/drl_pause") ; self.req_DrlPause = DrlPause.Request()
+        self._ros2_drl_resume                 = g_node.create_client(DrlResume,                      self._srv_name_prefix +"/drl/drl_resume") ; self.req_DrlResume = DrlResume.Request()
+        self._ros2_drl_start                  = g_node.create_client(DrlStart,                       self._srv_name_prefix +"/drl/drl_start") ; self.req_DrlStart = DrlStart.Request()
+        self._ros2_drl_stop                   = g_node.create_client(DrlStop,                        self._srv_name_prefix +"/drl/drl_stop") ; self.req_DrlStop = DrlStop.Request()
+        self._ros2_get_drl_state              = g_node.create_client(GetDrlState,                    self._srv_name_prefix +"/drl/get_drl_state") ; self.req_GetDrlState = GetDrlState.Request()
 
         ########################################################################################################################################
 
@@ -1092,6 +2211,157 @@ class CDsrRobot:
             ret = PythonMgr.py_movej(_pos, _vel, _acc, _time, _radius, mod, ra, _async)
         return ret
 
+    def movejx(self, pos, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, sol=0, v=None, a=None, t=None, r=None):
+        ret = _movejx(pos, vel, acc, time, radius, ref, mod, ra, sol, v, a, t, r, _async=0)
+        return ret 
+    def amovejx(self, pos, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, sol=0, v=None, a=None, t=None, r=None):
+        ret = _movejx(pos, vel, acc, time, radius, ref, mod, ra, sol, v, a, t, r, _async=1)
+        return ret 
+    def _movejx(self, pos, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, sol=0, v=None, a=None, t=None, r=None, _async=0):
+        # _pos
+        _pos = get_posx(pos)
+
+        # _vel
+        temp = get_param(vel, v)
+        if temp == None:
+            _vel = self._g_velj
+        else:
+            if type(temp) == int or type(temp) == float:
+                _vel = [temp] * DR_VELJ_DT_LEN
+            elif type(temp) == list and len(temp) == DR_VELJ_DT_LEN:
+                _vel = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+        if is_number(_vel) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        for item in _vel:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        # _acc
+        temp = get_param(acc, a)
+        if temp == None:
+            _acc = self._g_accj
+        else:
+            if type(temp) == int or type(temp) == float:
+                _acc = [temp] * DR_ACCJ_DT_LEN
+            elif type(temp) == list and len(temp) == DR_ACCJ_DT_LEN:
+                _acc = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+        if is_number(_acc) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        for item in _acc:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        # _time
+        _time = get_param(time, t)
+        if _time == None:
+            _time = 0.0
+
+        if type(_time) != int and type(_time) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+        if _time < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+        # check vel, acc, time
+        #_check_valid_vel_acc(_vel, _acc, _time)
+        _check_valid_vel_acc_joint(_vel, _acc, _time)
+
+        # _radius
+        _radius = get_param(radius, r)
+        if _radius == None:
+            if self._g_blend_state == True:
+                _radius = self._g_blend_radius
+            else:
+                _radius = 0.0
+
+        if type(_radius) != int and type(_radius) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : radius, r")
+
+        if _radius < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : radius, r")
+
+        # _ref
+        if ref == None:
+            _ref = self._g_coord
+        else:
+            _ref = ref
+
+        # check ref
+        if type(_ref) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+        if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+        # mod
+        if type(mod) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+        if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+        # ra
+        if type(ra) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type, ra")
+
+        if ra != DR_MV_RA_OVERRIDE and ra != DR_MV_RA_DUPLICATE:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ra")
+
+        # sol
+        if type(sol) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : sol")
+
+        if sol < DR_SOL_MIN or sol > DR_SOL_MAX:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : sol")
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS service call
+        if __ROS2__: 
+            #srv = _ros_movejx(_pos, _vel[0], _acc[0], _time, mod, _ref, _radius, ra, sol, _async)   
+            req = self.MoveJointx.Request()
+            req.pos         = [float(x) for x in _pos]
+            req.vel         = float(_vel[0])
+            req.acc         = float(_acc[0])
+            req.time        = float(_time)
+            req.mode        = int(mod)
+            req.ref         = int(_ref)
+            req.radius      = float(_radius)
+            req.blend_type  = int(ra)
+            req.sol         = int(sol)
+            req.sync_type   = int(_async)
+
+            #ret = srv.success
+            #ret = 0 if (srv.success == True) else -1
+            future = self._ros2_movejx.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('movejx Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1                
+        else:    
+            ret = PythonMgr.py_movejx(_pos, _vel, _acc, _time, _radius, _ref, mod, ra, sol, _async)
+            print_ext_result("{0} = PythonMgr.py_movejx(pos:{1}, vel:{2}, acc:{3}, time:{4}, radius:{5}, ref{6}, mod{7}, ra:{8}, sol:{9}, async:{10})" \
+                             .format(ret, _pos, dr_form(_vel), dr_form(_acc), _time, _radius, _ref, mod, ra, sol, _async))   
+        return ret
+
+
     def movel(self, pos, vel=None, acc=None, time=None, radius=None, ref=None, mod=DR_MV_MOD_ABS, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None):
         ret = _movel(pos, vel, acc, time, radius, ref, mod, ra, v, a, t, r, _async=0)
         return ret
@@ -1249,4 +2519,839 @@ class CDsrRobot:
             ret = PythonMgr.py_movel(_pos, _vel, _acc, _time, _radius, _ref, mod, ra, qcommand, _async)
             print_ext_result("{0} = PythonMgr.py_movel(pos:{1}, vel:{2}, acc:{3}, time:{4}, radius:{5}, ref:{6}, mod:{7}, ra:{8}, qcommand:{9}, async:{10})" \
                              .format(ret, _pos, dr_form(_vel), dr_form(_acc), _time, _radius, _ref, mod, ra, qcommand, _async))
+        return ret
+
+    def movec(self, pos1, pos2, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, angle=None, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None, an=None):
+        ret = _movec(pos1, pos2, vel, acc, time, radius, ref, mod, angle, ra, v, a, t, r, an, _async=0)
+        return ret
+    def amovec(self, pos1, pos2, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, angle=None, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None, an=None):
+        ret = _movec(pos1, pos2, vel, acc, time, radius, ref, mod, angle, ra, v, a, t, r, an, _async=1)
+        return ret
+    def _movec(self, pos1, pos2, vel=None, acc=None, time=None, radius=None, ref=None, mod= DR_MV_MOD_ABS, angle=None, ra=DR_MV_RA_DUPLICATE, v=None, a=None, t=None, r=None, an=None, _async=0):
+
+        # _pos1, _pos2
+
+        _pos1 = get_normal_pos(pos1, def_type=posx)
+        _pos2 = get_normal_pos(pos2, def_type=posx)
+
+        if type(_pos1) != type(_pos2):
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos1, ps2")
+
+        # _vel
+        temp = get_param(vel, v)
+        if temp == None:
+            _vel = self._g_velx
+        else:
+            if type(temp) == int or type(temp) == float:
+                #_vel = [temp] * DR_VELX_DT_LEN #<����> ���� �� �ΰ� ����
+                _vel = [0] * DR_VELX_DT_LEN     #<����> _vel[0]=temp, _vel[1]= DR_COND_NONE
+                _vel[0] = temp
+                _vel[1] = DR_COND_NONE
+            elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+                _vel = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+        if is_number(_vel) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        for item in _vel:
+            #if item < 0:
+            if (item < 0) and (item != DR_COND_NONE):
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        # _acc
+        temp = get_param(acc, a)
+        if temp == None:
+            _acc = self._g_accx
+        else:
+            if type(temp) == int or type(temp) == float:
+                #_acc = [temp] * DR_ACCX_DT_LEN #<����> ���� �� �ΰ� ����
+                _acc = [0] * DR_ACCX_DT_LEN     #<����> _acc[0]=temp, _acc[1]= DR_COND_NONE
+                _acc[0] = temp
+                _acc[1] = DR_COND_NONE
+            elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+                _acc = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+        if is_number(_acc) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        for item in _acc:
+            #if item < 0:
+            if (item < 0) and (item != DR_COND_NONE):
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        # _time
+        _time = get_param(time, t)
+        if _time == None:
+            _time = 0.0
+
+        if type(_time) != int and type(_time) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+        if _time < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+        # check vel, acc, time
+        #_check_valid_vel_acc(_vel, _acc, _time)
+        _check_valid_vel_acc_task(_vel, _acc, _time)
+
+        # _radius
+        _radius = get_param(radius, r)
+        if _radius == None:
+            if self._g_blend_state == True:
+                _radius = self._g_blend_radius
+            else:
+                _radius = 0.0
+
+        if type(_radius) != int and type(_radius) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : radius, r")
+
+        if _radius < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : radius, r")
+
+        # _ref
+        if ref == None:
+            _ref = _g_coord
+        else:
+            _ref = ref
+
+        # check ref
+        if type(_ref) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+        if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+        # mod
+        if type(mod) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+        if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+        # _angle
+        temp = get_param(angle, an)
+        if temp == None:
+            _angle = [0, 0]
+        else:
+            if type(temp) == int or type(temp) == float:
+                _angle = [temp, 0]
+            elif type(temp) == list and len(temp) == DR_ANGLE_DT_LEN:
+                _angle = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : angle, an")
+
+        if is_number(_angle) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : angle, an")
+
+        for item in _angle:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : angle, an")
+
+        # ra
+        if type(ra) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ra")
+
+        if ra != DR_MV_RA_OVERRIDE and ra != DR_MV_RA_DUPLICATE:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ra")
+
+        # qcommand
+        if type(_pos1) == posx:
+            qcommand = 0
+        else:
+            qcommand = 1
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS service call
+        if __ROS2__:
+            # make multi pos
+            _circle_pos = _ros_listToFloat64MultiArray([_pos1, _pos2])
+            #_circle_pos = _ros_listToFloat64MultiArray([ [float(x) for x in _pos1], [float(x) for x in _pos2] ])
+            #print(_circle_pos)
+
+            #srv = _ros_movec(_circle_pos, _vel, _acc, _time, mod, _ref, _angle[0], _angle[1], _radius, ra, _async) 
+            req = self.MoveCircle.Request()
+            req.pos         = _circle_pos               #??? 검증필요!
+            req.vel         = [float(x) for x in _vel]
+            req.acc         = [float(x) for x in _acc]
+            req.time        = float(_time)
+            req.radius      = float(_radius)
+            req.ref         = int(_ref)
+            req.mode        = int(mod)
+            req.angle1      = float(_angle[0])
+            req.angle2      = float(_angle[1])
+            req.blend_type  = int(ra)
+            req.sync_type   = int(_async)
+
+            #RRR ret = 0 if (srv.success == True) else -1
+            future = self._ros2_movec.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('movec Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1                
+        else:   
+            ret = PythonMgr.py_movec(_pos1, _pos2, _vel, _acc, _time, _radius, _ref, mod, _angle, ra, qcommand, _async)
+            print_ext_result("{0} = PythonMgr.py_movec(pos1:{1}, pos2:{2}, vel:{3}, acc:{4}, time:{5}, radius:{6}, ref:{7}, mod:{8}, angle:{9}, ra:{10}, qcommand:{11}, async:{12})" \
+                             .format(ret, _pos1, _pos2, dr_form(_vel), dr_form(_acc), _time, _radius, _ref, mod, dr_form(_angle), ra, qcommand, _async))
+        return ret
+
+
+    def movesj(self, pos_list, vel=None, acc=None, time=None, mod= DR_MV_MOD_ABS, v=None, a=None, t=None):
+        ret = _movesj(pos_list, vel, acc, time, mod, v, a, t, _async=0)
+        return ret
+    def amovesj(self, pos_list, vel=None, acc=None, time=None, mod= DR_MV_MOD_ABS, v=None, a=None, t=None):
+        ret = _movesj(pos_list, vel, acc, time, mod, v, a, t, _async=1)
+        return ret
+    def _movesj(self, pos_list, vel=None, acc=None, time=None, mod= DR_MV_MOD_ABS, v=None, a=None, t=None, _async=0):
+        # pos_list
+        if type(pos_list) != list:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list")
+
+        for item in pos_list:
+            if type(item) != posj:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list [item]")
+
+        # _vel
+        temp = get_param(vel, v)
+        if temp == None:
+            _vel = self._g_velj
+        else:
+            if type(temp) == int or type(temp) == float:
+                _vel = [temp] * DR_VELJ_DT_LEN
+            elif type(temp) == list and len(temp) == DR_VELJ_DT_LEN:
+                _vel = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+        if is_number(_vel) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        for item in _vel:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        # _acc
+        temp = get_param(acc, a)
+        if temp == None:
+            _acc = self._g_accj
+        else:
+            if type(temp) == int or type(temp) == float:
+                _acc = [temp] * DR_ACCJ_DT_LEN
+            elif type(temp) == list and len(temp) == DR_ACCJ_DT_LEN:
+                _acc = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+        if is_number(_acc) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        for item in _acc:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        # _time
+        _time = get_param(time, t)
+        if _time == None:
+            _time = 0.0
+
+        if type(_time) != int and type(_time) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+        if _time < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+        # check vel, acc, time
+        #_check_valid_vel_acc(_vel, _acc, _time)
+        _check_valid_vel_acc_joint(_vel, _acc, _time)
+
+        # mod
+        if type(mod) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+        if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS service call
+        if __ROS2__:
+            # make multi pos
+            _spline_posj = _ros_listToFloat64MultiArray(pos_list)
+            #srv = _ros_movesj(_spline_posj, len(_spline_posj), _vel, _acc, _time, mod, _async)
+
+            req = self.MoveSplineJoint.Request()
+
+            req.pos         = _spline_posj               #??? 검증필요!
+            req.pos_cnt     = len(_spline_posj)
+
+            if type(_vel) == list:
+                _vel = float(_vel[0]) 
+            if type(_acc) == list:
+                _acc = float(_acc[0]) 
+            req.vel         = _vel #[float(x) for x in _vel]
+            req.acc         = _acc #[float(x) for x in _acc]
+
+            req.time        = float(_time)
+            req.mode        = int(mod)
+            req.sync_type   = int(_async)
+
+            #RRR ret = 0 if (srv.success == True) else -1
+            future = self._ros2_movesj.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('movesj Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1                
+        else:    
+            ret = PythonMgr.py_movesj(pos_list, _vel, _acc, _time, mod, _async)
+            print_ext_result("{0} = PythonMgr.py_movesj(pos_list:{1}, vel:{2}, acc:{3}, time:{4}, mod:{5} async:{6})" \
+                             .format(ret, dr_form(pos_list), dr_form(_vel), dr_form(_acc), _time, mod, _async))
+        return ret
+
+
+
+    def movesx(self, pos_list, vel=None, acc=None, time=None, ref=None, mod= DR_MV_MOD_ABS, vel_opt=DR_MVS_VEL_NONE, v=None, a=None, t=None):
+        ret = _movesx(pos_list, vel, acc, time, ref, mod, vel_opt, v, a, t, _async=0)
+        return ret
+    def amovesx(self, pos_list, vel=None, acc=None, time=None, ref=None, mod= DR_MV_MOD_ABS, vel_opt=DR_MVS_VEL_NONE, v=None, a=None, t=None):
+        ret = _movesx(pos_list, vel, acc, time, ref, mod, vel_opt, v, a, t, _async=1)
+        return ret
+    def _movesx(self, pos_list, vel=None, acc=None, time=None, ref=None, mod= DR_MV_MOD_ABS, vel_opt=DR_MVS_VEL_NONE, v=None, a=None, t=None, _async=0):
+        # pos_list
+        if type(pos_list) != list:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list")
+
+        for item in pos_list:
+            if type(item) != posx:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : pos_list [item]")
+
+        # _vel
+        temp = get_param(vel, v)
+        if temp == None:
+            _vel = self._g_velx
+        else:
+            if type(temp) == int or type(temp) == float:
+                #_vel = [temp] * DR_VELX_DT_LEN #<����> ���� �� �ΰ� ����
+                _vel = [0] * DR_VELX_DT_LEN     #<����> _vel[0]=temp, _vel[1]= DR_COND_NONE
+                _vel[0] = temp
+                _vel[1] = DR_COND_NONE
+            elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+                _vel = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+        if is_number(_vel) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        for item in _vel:
+            #if item < 0:
+            if (item < 0) and (item != DR_COND_NONE):
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        # _acc
+        temp = get_param(acc, a)
+        if temp == None:
+            _acc = self._g_accx
+        else:
+            if type(temp) == int or type(temp) == float:
+                #_acc = [temp] * DR_ACCX_DT_LEN #<����> ���� �� �ΰ� ����
+                _acc = [0] * DR_ACCX_DT_LEN     #<����> _acc[0]=temp, _acc[1]= DR_COND_NONE
+                _acc[0] = temp
+                _acc[1] = DR_COND_NONE
+            elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+                _acc = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+        if is_number(_acc) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        for item in _acc:
+            #if item < 0:
+            if (item < 0) and (item != DR_COND_NONE):
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        # _time
+        _time = get_param(time, t)
+        if _time == None:
+            _time = 0.0
+
+        if type(_time) != int and type(_time) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+        if _time < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+        # check vel, acc, time
+        #_check_valid_vel_acc(_vel, _acc, _time)
+        _check_valid_vel_acc_task(_vel, _acc, _time)
+
+        # _ref
+        if ref == None:
+            _ref = _g_coord
+        else:
+            _ref = ref
+
+        # check ref
+        if type(_ref) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+        if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+        # mod
+        if type(mod) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+        if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+        # vel_opt
+        if type(vel_opt) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel_opt")
+
+        if vel_opt != DR_MVS_VEL_NONE and vel_opt != DR_MVS_VEL_CONST:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel_opt")
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS service call
+        if __ROS2__:
+            # make multi pos
+            _spline_posx = _ros_listToFloat64MultiArray(pos_list)
+            #srv = _ros_movesx(_spline_posx, len(_spline_posx), _vel, _acc, _time, mod, _ref, vel_opt, _async)
+            req = self.MoveSplineTask.Request()
+            req.pos         = _spline_posx               #??? 검증필요!
+            req.pos_cnt     = len(_spline_posx)
+            req.vel         = [float(x) for x in _vel]
+            req.acc         = [float(x) for x in _acc]
+            req.time        = float(_time)
+            req.ref         = int(_ref)
+            req.mode        = int(mod)
+            req.opt         = int(vel_opt)
+            req.sync_type   = int(_async)
+
+            #RRR ret = 0 if (srv.success == True) else -1
+            future = self._ros2_movesx.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('movesx Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1                
+        else:
+            ret = PythonMgr.py_movesx(pos_list, _vel, _acc, _time, _ref, mod, vel_opt, _async)
+            print_ext_result("{0} = PythonMgr.py_movesx(pos_list:{1}, vel:{2}, acc:{3}, time:{4}, ref:{5}, mod:{6}, vel_opt:{7}, async:{8})" \
+                            .format(ret, dr_form(pos_list), dr_form(_vel), dr_form(_acc), _time, _ref, mod, vel_opt, _async))
+        return ret
+
+    def moveb(self, seg_list, vel=None, acc=None, ref=None, time=None, mod=DR_MV_MOD_ABS, v=None, a=None, t=None):
+        ret = _moveb(seg_list, vel, acc, ref, time, mod, v, a, t, _async=0)
+        return ret
+    def amoveb(self, seg_list, vel=None, acc=None, ref=None, time=None, mod=DR_MV_MOD_ABS, v=None, a=None, t=None):
+        ret = _moveb(seg_list, vel, acc, ref, time, mod, v, a, t, _async=1)
+        return ret
+    def _moveb(self, seg_list, vel=None, acc=None, ref=None, time=None, mod=DR_MV_MOD_ABS, v=None, a=None, t=None, _async=0):
+
+        # seg_list
+        if type(seg_list) != list:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : seg_list")
+
+        if len(seg_list) == 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : seg_list")
+
+        _seg_list = []
+        if __ROS2__:
+            for seg in seg_list:
+                _seg_list.append(seg.to_list())
+        else:
+            for seg in seg_list:
+                if type(seg) != posb:
+                    raise DR_Error(DR_ERROR_TYPE, "Invalid type : seg_list(item)")
+                else:
+                    _seg_list.append(seg.to_list())
+
+        if __ROS2__:
+            print(len(_seg_list))
+            _ros_seg_list = []
+            _tmp_list = []
+
+            for s in range(0, len(_seg_list)):
+                #print(s)
+                for elemnt in range(0, len(_seg_list[s])):
+                    if _seg_list[s][elemnt] == None:
+                        _seg_list[s][elemnt] = [0.0]*POINT_COUNT
+
+                # make [pos1] + [pos2] + [type] + [radius]
+                _tmp_list = _seg_list[s][1] + _seg_list[s][2] + [_seg_list[s][0]] + [_seg_list[s][3]]
+                _ros_seg_list.append(_tmp_list)
+
+        # _vel
+        temp = get_param(vel, v)
+        if temp == None:
+            _vel = self._g_velx
+        else:
+            if type(temp) == int or type(temp) == float:
+                #_vel = [temp] * DR_VELX_DT_LEN #<����> ���� �� �ΰ� ����
+                _vel = [0] * DR_VELX_DT_LEN     #<����> _vel[0]=temp, _vel[1]= DR_COND_NONE
+                _vel[0] = temp
+                _vel[1] = DR_COND_NONE
+            elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+                _vel = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+        if is_number(_vel) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        for item in _vel:
+            #if item < 0:
+            if (item < 0) and (item != DR_COND_NONE):
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        # _acc
+        temp = get_param(acc, a)
+        if temp == None:
+            _acc = self._g_accx
+        else:
+            if type(temp) == int or type(temp) == float:
+                #_acc = [temp] * DR_ACCX_DT_LEN #<����> ���� �� �ΰ� ����
+                _acc = [0] * DR_ACCX_DT_LEN     #<����> _acc[0]=temp, _acc[1]= DR_COND_NONE
+                _acc[0] = temp
+                _acc[1] = DR_COND_NONE
+            elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+                _acc = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+        if is_number(_acc) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        for item in _acc:
+            #if item < 0:
+            if (item < 0) and (item != DR_COND_NONE):
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        # _time
+        _time = get_param(time, t)
+        if _time == None:
+            _time = 0.0
+
+        # check vel, acc, time
+        #_check_valid_vel_acc(_vel, _acc, _time)
+        _check_valid_vel_acc_task(_vel, _acc, _time)
+
+        # ref
+        if ref == None:
+            _ref = self._g_coord
+        else:
+            _ref = ref
+
+        # check ref
+        if type(_ref) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+        if _ref < DR_BASE or _ref > DR_TC_USER_MAX:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+        # mod
+        if type(mod) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : mod")
+
+        if mod != DR_MV_MOD_ABS and mod != DR_MV_MOD_REL:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : mod")
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS Service call
+        if __ROS2__:
+            seg = _ros_listToFloat64MultiArray(_ros_seg_list)
+            #srv = _ros_moveb(seg, len(_ros_seg_list), _vel, _acc, _time, mod, _ref, _async)    
+            req = self.MoveBlending.Request()
+            req.segment     = seg               #??? 검증필요!
+            req.pos_cnt     = len(_ros_seg_list)
+            req.vel         = [float(x) for x in _vel]
+            req.acc         = [float(x) for x in _acc]
+            req.time        = float(_time)
+            req.ref         = int(_ref)
+            req.mode        = int(mod)
+            req.sync_type   = int(_async)
+
+            #RRR ret = 0 if (srv.success == True) else -1
+            future = self._ros2_moveb.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('moveb Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1                
+        else:
+            ret = PythonMgr.py_moveb(_seg_list, _vel, _acc, _time, _ref, mod, _async)
+            print_ext_result("{0} = PythonMgr.py_moveb(seg_list:{1}, vel:{2}, acc:{3}, time:{4}, ref:{5}, mod:{6}, async:{7})" \
+                             .format(ret, dr_form(_seg_list), dr_form(_vel), dr_form(_acc), _time, _ref, mod, _async))
+        return ret
+
+
+    def move_spiral(self, rev=10, rmax=10, lmax=0, vel=None, acc=None, time=None, axis=DR_AXIS_Z, ref=DR_TOOL, v=None, a=None, t=None):
+        ret = _move_spiral(rev, rmax, lmax, vel, acc, time, axis, ref, v, a, t, _async=0)
+        return ret
+    def amove_spiral(self, rev=10, rmax=10, lmax=0, vel=None, acc=None, time=None, axis=DR_AXIS_Z, ref=DR_TOOL, v=None, a=None, t=None):
+        ret = _move_spiral(rev, rmax, lmax, vel, acc, time, axis, ref, v, a, t, _async=1)
+        return ret
+    def _move_spiral(self, rev=10, rmax=10, lmax=0, vel=None, acc=None, time=None, axis=DR_AXIS_Z, ref=DR_TOOL, v=None, a=None, t=None, _async=0):
+        # rev
+        if type(rev) != int and type(rev) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : rev")
+
+        if rev <= 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : rev (Ranges: rev > 0)")
+
+        # rmax
+        if type(rmax) != int and type(rmax) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : rmax")
+
+        if rmax <= 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value: rmax (Ranges: rmax > 0)")
+
+        # lmax
+        if type(lmax) != int and type(lmax) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : lmax")
+
+        # _vel
+        temp = get_param(vel, v)
+        if temp == None:
+            _vel = self._g_velx
+        else:
+            if type(temp) == int or type(temp) == float:
+                _vel = [temp] * DR_VELX_DT_LEN
+            elif type(temp) == list and len(temp) == DR_VELX_DT_LEN:
+                _vel = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : vel, v")
+
+        if is_number(_vel) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        for item in _vel:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : vel, v")
+
+        # _acc
+        temp = get_param(acc, a)
+        if temp == None:
+            _acc = self._g_accx
+        else:
+            if type(temp) == int or type(temp) == float:
+                _acc = [temp] * DR_ACCX_DT_LEN
+            elif type(temp) == list and len(temp) == DR_ACCX_DT_LEN:
+                _acc = temp
+            else:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : acc, a")
+
+        if is_number(_acc) != True:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        for item in _acc:
+            if item < 0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : acc, a")
+
+        # _time
+        _time = get_param(time, t)
+        if _time == None:
+            _time = 0.0
+
+        if type(_time) != int and type(_time) != float:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : time, t")
+
+        if _time < 0:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : time, t")
+
+        # check vel, acc, time
+        #_check_valid_vel_acc(_vel, _acc, _time)
+        _check_valid_vel_acc_joint(_vel, _acc, _time)
+
+        # axis
+        if type(axis) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : axis")
+
+        if axis != DR_AXIS_X and axis != DR_AXIS_Y and axis != DR_AXIS_Z:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : axis")
+
+        # ref
+        if type(ref) != int:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+        if ref != DR_BASE and ref != DR_TOOL and (ref < DR_TC_USER_MIN or ref > DR_TC_USER_MAX):
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS service call
+        if __ROS2__:
+            #srv = _ros_move_spiral(rev, rmax, lmax, _vel, _acc, _time, axis, ref, _async)
+            req = self.MoveSpiral.Request()
+            req.revolution  = rev               #??? 검증필요!
+            req.max_radius  = float(rmax)
+            req.max_length  = float(lmax)
+            req.vel         = [float(x) for x in _vel]
+            req.acc         = [float(x) for x in _acc]
+            req.time        = float(_time)
+            req.task_axis   = int(axis)
+            req.ref         = int(ref)
+            req.sync_type   = int(_async)
+
+            #RRR ret = 0 if (srv.success == True) else -1
+            future = self._ros2_move_spiral.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('move_spiral Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1     
+        else:    
+            ret = PythonMgr.py_move_spiral(rev, rmax, lmax, _vel, _acc, _time, axis, ref, _async)
+            print_ext_result("{0} = PythonMgr.py_move_spiral(rev:{1}, rmax:{2}, lmax:{3}, vel:{4}, acc:{5}, time:{6}, axis:{7}, ref:{8}, async:{9})" \
+                             .format(ret, dr_form(rev), dr_form(rmax), dr_form(lmax), dr_form(_vel), dr_form(_acc), _time, axis, ref, _async))    
+        return ret
+
+
+
+    def move_periodic(self, amp, period, atime=None, repeat=None, ref=DR_TOOL):
+        ret = _move_periodic(amp, period, atime, repeat, ref, _async=0)
+        return ret
+    def amove_periodic(self, amp, period, atime=None, repeat=None, ref=DR_TOOL):
+        ret = _move_periodic(amp, period, atime, repeat, ref, _async=1)
+        return ret
+    def _move_periodic(self, amp, period, atime=None, repeat=None, ref=DR_TOOL, _async=0):
+        _amp = [POINT_COUNT]
+        _period = [POINT_COUNT]
+        _atime =0.0
+        _repeat =0.0
+        _ref=0 
+
+        # amp : float[6] 
+        if type(amp) != list:
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : amp")
+        if len(amp) != POINT_COUNT:
+            raise DR_Error(DR_ERROR_VALUE, "Invalid value : amp")
+        _amp =amp
+
+        # period : float or float[6] 
+        if (type(period) != int) and (type(period) != float) and (type(period) != list):
+            raise DR_Error(DR_ERROR_TYPE, "Invalid type : period")
+
+        if (type(period) == int) or (type(period) == float):
+            _period = [period] * POINT_COUNT
+        else: #list �� ��� 
+            if len(period) != POINT_COUNT:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : period")
+            _period = period
+
+        # atime 
+        if atime == None:
+            _atime = 0.0
+        else:
+            if (type(atime) != int) and (type(atime) != float):
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : atime")
+            if atime < 0.0:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : atime")
+            _atime = atime
+
+        # repeat 
+        if repeat == None:
+            _repeat = 1
+        else:
+            if (type(repeat) != int) and (type(repeat) != float): 
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : repeat")
+            if repeat < 0.0: 
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : repeat")
+            _repeat = repeat
+
+        # ref
+        if ref == None:
+            #_ref = _g_coord
+            _ref = DR_TOOL
+        else:
+            if type(ref) != int:
+                raise DR_Error(DR_ERROR_TYPE, "Invalid type : ref")
+
+            if ref < DR_BASE or ref > DR_TC_USER_MAX:
+                raise DR_Error(DR_ERROR_VALUE, "Invalid value : ref")
+            _ref = ref
+
+        # _async
+        if 1 == _async:
+            _radius = 0   
+
+        # ROS service call
+        if __ROS2__:
+            #srv = _ros_move_periodic(_amp, _period, _atime, _repeat, _ref, _async)    
+            req = self.MovePeriodic.Request()
+            req.amp         = [float(x) for x in _amp]
+            req.periodic    = [float(x) for x in _period]
+            req.acc         = float(_atime)
+            req.repeat      = int(_repeat)
+            req.ref         = int(_ref)
+            req.sync_type   = int(_async)
+
+            #RRR ret = 0 if (srv.success == True) else -1
+            future = self._ros2_move_periodic.call_async(req)
+            rclpy.spin_until_future_complete(g_node, future)
+
+            try:
+                result = future.result()
+            except Exception as e:
+                g_node.get_logger().info('move_periodic Service call failed %r' % (e,))
+            else:
+                if result == None:
+                    ret = -1    
+                else:        
+                    ret = 0 if (result.success == True) else -1     
+
+        else:
+            ret = PythonMgr.py_move_periodic(_amp, _period, _atime, _repeat, _ref, _async)
+            print_ext_result("{0} = PythonMgr.move_periodic(amp:{1}, period:{2}, atime:{3}, repeat{4}, ref:{5}, async:{6})" \
+                             .format(ret, dr_form(_amp), dr_form(_period), _atime, _repeat, _ref, _async))
         return ret

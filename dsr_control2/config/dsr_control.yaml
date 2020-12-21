@@ -1,94 +1,27 @@
-
-dsr_joint_position_controller:
-  type: position_controllers/JointGroupPositionController
-  joints:
-    - joint1
-    - joint2
-    - joint3
-    - joint4
-    - joint5
-    - joint6
-  publish_rate: 20
-dsr_joint_trajectory_controller:
-  type: position_controllers/JointTrajectoryController
-  joints:
-    - joint1
-    - joint2
-    - joint3
-    - joint4
-    - joint5
-    - joint6
-  publish_rate: 20
+dsr_position_controller:
+  ros__parameters:
+    type: position_controllers/JointGroupPositionController
+    joints:
+       - joint1
+       - joint2
+       - joint3
+       - joint4
+       - joint5
+       - joint6
+    write_op_modes:
+       - joint1
+       - joint2
+       - joint3
+       - joint4
+       - joint5
+       - joint6
+    state_publish_rate: 25
+    action_monitor_rate: 20
+    constraints:
+      stopped_velocity_tolerance: 0.05
+      goal_time: 5
 
 dsr_joint_publisher:
-  type: joint_state_controller/JointStateController
-  publish_rate: 150
-
-dsr_joint1_position:
-  type: position_controllers/JointPositionController
-  joint: joint1
-  pid: {p: 500.0, i: 100.0, d: 200.0,  i_clamp: 500}
-
-dsr_joint2_position:
-  type: position_controllers/JointPositionController
-  joint: joint2
-  pid: {p: 500.0, i: 100.0, d: 250.0, i_clamp: 500}
-
-dsr_joint3_position:
-  type: position_controllers/JointPositionController
-  joint: joint3
-  pid: {p: 300.0, i: 20.0, d: 40.0, i_clamp: 500}
-
-dsr_joint4_position:
-  type: position_controllers/JointPositionController
-  joint: joint4
-  pid: {p: 100.0, i: 0.0, d: 40.0, i_clamp: 500}
-
-dsr_joint5_position:
-  type: position_controllers/JointPositionController
-  joint: joint5
-  pid: {p: 200.0, i: 20.0, d: 25.0, i_clamp: 500}
-
-dsr_joint6_position:
-  type: position_controllers/JointPositionController
-  joint: joint6
-  pid: {p: 300.0, i: 20.0, d: 25.0, i_clamp: 500}
-
-
-dsr_velocity_controller:
-  type: "diff_drive_controller/DiffDriveController"
-  left_wheel: ['front_left_wheel', 'rear_left_wheel']
-  right_wheel: ['front_right_wheel', 'rear_right_wheel']
-  publish_rate: 50
-  pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
-  twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
-  cmd_vel_timeout: 0.25
-
-  # Base frame_id
-  base_frame_id: base_link
-
-  # Odometry fused with IMU is published by robot_localization, so
-  # no need to publish a TF based on encoders alone.
-  enable_odom_tf: false
-
-  # Husky hardware provides wheel velocities
-  estimate_velocity_from_position: false
-
-  # Wheel separation and radius multipliers
-  wheel_separation_multiplier: 1.875 # default: 1.0
-  wheel_radius_multiplier    : 1.0 # default: 1.0
-
-  # Velocity and acceleration limits
-  # Whenever a min_* is unspecified, default to -max_*
-  linear:
-    x:
-      has_velocity_limits    : true
-      max_velocity           : 1.0   # m/s
-      has_acceleration_limits: true
-      max_acceleration       : 3.0   # m/s^2
-  angular:
-    z:
-      has_velocity_limits    : true
-      max_velocity           : 2.0   # rad/s
-      has_acceleration_limits: true
-      max_acceleration       : 6.0   # rad/s^2
+  ros__parameters:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100

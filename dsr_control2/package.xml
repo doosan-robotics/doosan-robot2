@@ -21,21 +21,21 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>controller_manager</build_depend>
   <build_depend>hardware_interface</build_depend>
-  <!--build_depend>moveit_msgs</build_depend-->
+  <build_depend>moveit_msgs</build_depend>
 
   <build_export_depend>rclcpp</build_export_depend>
   <build_export_depend>dsr_msgs2</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>controller_manager</build_export_depend>
   <build_export_depend>hardware_interface</build_export_depend>
-  <!--build_export_depend>moveit_msgs</build_export_depend-->
+  <build_export_depend>moveit_msgs</build_export_depend>
 
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>dsr_msgs2</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>controller_manager</exec_depend>  
   <exec_depend>hardware_interface</exec_depend>  
-  <!--exec_depend>moveit_msgs</exec_depend-->
+  <exec_depend>moveit_msgs</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

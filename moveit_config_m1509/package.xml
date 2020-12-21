@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>moveit_config_m1509</name>
+  <version>2.0.0</version>
+  <description>
+    An automatically generated package with all the configuration and launch files for using the m1509 with the MoveIt! Motion Planning Framework
+  </description>
+  <author email="jinhyuk.gong@doosan.com">Jinhyuk.Gong</author>
+  <maintainer email="jinhyuk.gong@doosan.com">Jinhyuk.Gong</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>moveit_resources_panda_description</exec_depend>
+  <exec_depend>dsr_description2</exec_depend>
+  <!-- disabled to remove circular dependencies
+  <exec_depend>moveit_ros_move_group</exec_depend>
+  <exec_depend>moveit_fake_controller_manager</exec_depend>
+  <exec_depend>moveit_kinematics</exec_depend>
+  <exec_depend>moveit_planners_ompl</exec_depend>
+  <exec_depend>moveit_ros_visualization</exec_depend>
+  -->
+  <build_depend>moveit_common</build_depend>
+
+  <depend>moveit_ros_planning_interface</depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <!-- TODO(#40): Package not available in ROS 2, find equivalent when migrating launch files
+  <exec_depend>topic_tools</exec_depend>
+  -->
+  <!-- This package is referenced in the warehouse launch files, but does not build out of the box at the moment.
+       Commented the dependency until this works. -->
+  <!-- <exec_depend>warehouse_ros_mongo</exec_depend> -->
+
+  <export>
+      <build_type>ament_cmake</build_type>
+  </export>
+</package>

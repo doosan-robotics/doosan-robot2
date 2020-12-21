@@ -28,7 +28,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(dsr_msgs2 REQUIRED)
 find_package(controller_manager REQUIRED)
 find_package(hardware_interface REQUIRED)
-#TODO find_package(moveit_msgs REQUIRED)
+find_package(moveit_msgs REQUIRED)
 
 
 #??? catkin_package(
@@ -80,7 +80,7 @@ endif()
 
 add_executable(dsr_control_node2 ${SRC_FILES})
 #??? add_dependencies(dsr_control_node2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-ament_target_dependencies(dsr_control_node2 rclcpp std_msgs sensor_msgs dsr_msgs2 controller_manager hardware_interface)
+ament_target_dependencies(dsr_control_node2 rclcpp std_msgs sensor_msgs dsr_msgs2 controller_manager hardware_interface moveit_msgs)
 
 #target_link_libraries(dsr_control_node2 ${catkin_LIBRARIES})
 target_link_libraries(dsr_control_node2 boost_system boost_thread)
@@ -109,6 +109,6 @@ ament_export_dependencies(std_msgs)
 ament_export_dependencies(sensor_msgs)
 ament_export_dependencies(dsr_msgs2)
 ament_export_dependencies(controller_manager)
-#TODO ament_export_dependencies(moveit_msgs)
+ament_export_dependencies(moveit_msgs)
 ament_export_dependencies(hardware_interface)
 ament_package()

@@ -119,6 +119,7 @@ $ cd ~/ros2_ws
 $ rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
 $ rm -rf src/doosan-robot2/moveit_config_*/COLCON_IGNORE    # Command to activate the moveit package before colcon build
 $ colcon build
+$ . install/setup.bash
 ```
 You can run moveit2 with fake_controller from the moveit_config package.
 Please refer to the command format below.

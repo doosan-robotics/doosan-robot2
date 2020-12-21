@@ -17,7 +17,7 @@
     ### We recommand the /home/<user_home>/ros2_ws/src
     $ mkdir -p ~/ros2_ws/src
     $ cd ~/ros2_ws/src
-    $ git clone https://github.com/doosan-robotics/doosan-robot2.git
+    $ git clone -b foxy-devel --single-branch https://github.com/doosan-robotics/doosan-robot2.git
     $ git clone https://github.com/ros-controls/ros2_control.git
     $ git clone https://github.com/ros-controls/ros2_controllers.git
     $ git clone https://github.com/ros-simulation/gazebo_ros2_control.git

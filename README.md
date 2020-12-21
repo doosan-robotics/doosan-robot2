@@ -131,6 +131,6 @@ $ ros2 launch moveit_config_m1013 m1013.launch.py
 Moveit2 can be executed in conjunction with the control node. Enter the following command to use moveit2's planning function in conjunction with the actual robot.
 Refer to the arguments of the __Run dsr_control2 node__ item mentioned above.
 ```bash
-$ ros2 launch dsr_control2 dsr_moveit2.launch.py host:=192.168.137.100
+$ ros2 launch dsr_control2 dsr_moveit2.launch.py
 ```
 <img src="https://user-images.githubusercontent.com/47092672/102734069-3f324280-4382-11eb-9165-cdec6b52de17.gif" width="80%">

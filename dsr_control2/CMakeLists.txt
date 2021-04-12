@@ -60,22 +60,11 @@ SET( SRC_FILES
 
 LINK_LIBRARIES(DRFL PocoFoundation PocoNet)
 
-if($ENV{ROS_DISTRO} STREQUAL "kinetic")
-  # check OS 32bit or 64bit ?  
-  if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-    LINK_DIRECTORIES ("${COMMON_LIB_FILES}/$ENV{ROS_DISTRO}/x86_64")
-  else()
-    LINK_DIRECTORIES ("${COMMON_LIB_FILES}/$ENV{ROS_DISTRO}/x86_32")
-  endif()
-elseif($ENV{ROS_DISTRO} STREQUAL "melodic")
-  LINK_DIRECTORIES ("${COMMON_LIB_FILES}/$ENV{ROS_DISTRO}/x86_64")
-elseif($ENV{ROS_DISTRO} STREQUAL "eloquent")                      
-  LINK_DIRECTORIES ("${COMMON_LIB_FILES}/$ENV{ROS_DISTRO}/x86_64")
-elseif($ENV{ROS_DISTRO} STREQUAL "foxy")                          
+if($ENV{ROS_DISTRO} STREQUAL "foxy")                          
   LINK_DIRECTORIES ("${COMMON_LIB_FILES}/$ENV{ROS_DISTRO}/x86_64")
 else()
-    message("Unknown ROS distro:")
-    message($ENV{ROS_DISTRO})
+  message("Unknown ROS distro:")
+  message($ENV{ROS_DISTRO})
 endif()
 
 add_executable(dsr_control_node2 ${SRC_FILES})

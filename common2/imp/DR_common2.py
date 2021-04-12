@@ -5,11 +5,12 @@
 # @brief    define ROS2 DRL common functions
 # @author   kabdol2<kabkyoum.kim@doosan.com>
 # @version  0.10
-# @Last update date     2020-10-28
+# @Last update date     2021-02-15
 # @details
 #
 
 import collections
+import numpy            #for ROS2 add type ndarray 
 from DR_error2 import *
 
 # point count
@@ -259,12 +260,7 @@ def get_posx(pos):
 #             - DR_ERROR_VALUE : argument의 value 비정상
 #
 def get_normal_pos(pos, def_type=None):
-    '''
-    print("get_normal_pos")
-    print(pos)
-    print(def_type)
-    '''    
-    if type(pos) == posx or type(pos) == posj:
+    if type(pos) == posx or type(pos) == posj or type(pos) == numpy.ndarray: #for ROS2 add type ndarray  
         if is_number(pos) != True:
             raise DR_Error(DR_ERROR_VALUE, "Invalid value : pos", True)
         return pos

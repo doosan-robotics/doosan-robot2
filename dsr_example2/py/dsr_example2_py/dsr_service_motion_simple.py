@@ -98,34 +98,43 @@ def main(args=None):
     b_list1 = [seg11, seg12, seg14, seg15, seg16] 
 
     while rclpy.ok(): 
+        # move joint    
         movej(p2, vel=100, acc=100)
-        print("------------> movej OK")    
+        print("------------> move joint OK")    
         time.sleep(1)
 
+        # move joint task    
         movejx(x1, vel=30, acc=60, sol=0)
-        print("------------> movejx OK")    
+        print("------------> move joint task OK")    
         time.sleep(1)
 
+        # move line    
         movel(x2, velx, accx)
-        print("------------> movel OK")    
+        print("------------> move line OK")    
 
+        # move circle    
         movec(c1, c2, velx, accx)
-        print("------------> movec OK")    
+        print("------------> move circle OK")    
 
+        # move spline joint    
         movesj(qlist, vel=100, acc=100)
-        print("------------> movesj OK")    
+        print("------------> move spline joint OK")    
 
+        # move spline task    
         movesx(xlist, vel=100, acc=100)
-        print("------------> movesx OK")    
+        print("------------> spline task OK")    
 
+        # move spiral    
         move_spiral(rev=9.5,rmax=20.0,lmax=50.0,time=20.0,axis=DR_AXIS_Z,ref=DR_TOOL)
-        print("------------> move_spiral OK")    
+        print("------------> move spiral OK")    
 
+        # move periodic    
         move_periodic(amp =[10,0,0,0,30,0], period=1.0, atime=0.2, repeat=5, ref=DR_TOOL)
-        print("------------> move_periodic OK")    
+        print("------------> move periodic OK")    
 
+        # move Blending    
         moveb(b_list1, vel=150, acc=250, ref=DR_BASE, mod=DR_MV_MOD_ABS)
-        print("------------> moveb OK")    
+        print("------------> move Blending OK")    
 
     print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX good-bye!')
     print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX good-bye!')

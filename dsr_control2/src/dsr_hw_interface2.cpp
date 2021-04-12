@@ -20,9 +20,12 @@ extern rclcpp::Node::SharedPtr g_node; //ROS2
 CDRFL Drfl;
 //TODO Serial_comm ser_comm;
 
+bool g_bIsEmulatorMode = FALSE;
 bool g_bHasControlAuthority = FALSE;
 bool g_bTpInitailizingComplted = FALSE;
 bool g_bHommingCompleted = FALSE;
+
+ROBOT_JOINT_DATA g_joints[NUM_JOINT];
 
 DR_STATE    g_stDrState;
 DR_ERROR    g_stDrError;
@@ -768,27 +771,7 @@ namespace dsr_control2{
 
         // system Operations
         //ROS2 m_nh_system[0] = private_nh_.advertiseService("system/set_robot_mode", &DRHWInterface::set_robot_mode_cb, this);
-        //auto server_system_0 = private_nh_->create_service<dsr_msgs2::srv::SetRobotMode>("system/set_robot_mode", DRHWInterface::set_robot_mode_cb);
         m_nh_srv_set_robot_mode             = private_nh_->create_service<dsr_msgs2::srv::SetRobotMode>("system/set_robot_mode", DRHWInterface::set_robot_mode_cb);          
-
-        //  motion Operations
-        //auto server_motion_service_0  = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::movej_cb);
-        m_nh_srv_move_joint                 = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::move_joint_cb);                                
-        m_nh_srv_move_line                  = private_nh_->create_service<dsr_msgs2::srv::MoveLine>("motion/move_line", DRHWInterface::move_line_cb);                        
-        m_nh_srv_move_jointx                = private_nh_->create_service<dsr_msgs2::srv::MoveJointx>("motion/move_jointx", DRHWInterface::move_jointx_cb);               
-        m_nh_srv_move_circle                = private_nh_->create_service<dsr_msgs2::srv::MoveCircle>("motion/move_circle", DRHWInterface::move_circle_cb);       
-        m_nh_srv_move_spline_joint          = private_nh_->create_service<dsr_msgs2::srv::MoveSplineJoint>("motion/move_spline_joint", DRHWInterface::move_spline_joint_cb);      
-        m_nh_srv_move_spline_task           = private_nh_->create_service<dsr_msgs2::srv::MoveSplineTask>("motion/move_spline_task", DRHWInterface::move_spline_task_cb);          
-        m_nh_srv_move_blending              = private_nh_->create_service<dsr_msgs2::srv::MoveBlending>("motion/move_blending", DRHWInterface::move_blending_cb);          
-        m_nh_srv_move_spiral                = private_nh_->create_service<dsr_msgs2::srv::MoveSpiral>("motion/move_spiral", DRHWInterface::move_spiral_cb);              
-        m_nh_srv_move_periodic              = private_nh_->create_service<dsr_msgs2::srv::MovePeriodic>("motion/move_periodic", DRHWInterface::move_periodic_cb);              
-
-        // Gripper Operations
-        // Serial Operations  
-
-
-        //  system
-//OK    m_nh_srv_set_robot_mode             = private_nh_->create_service<dsr_msgs2::srv::SetRobotMode>("system/set_robot_mode", DRHWInterface::set_robot_mode_cb);          
         m_nh_srv_get_robot_mode             = private_nh_->create_service<dsr_msgs2::srv::GetRobotMode>("system/get_robot_mode", DRHWInterface::get_robot_mode_cb);     
         m_nh_srv_set_robot_system           = private_nh_->create_service<dsr_msgs2::srv::SetRobotSystem>("system/set_robot_system", DRHWInterface::set_robot_system_cb);         
         m_nh_srv_get_robot_system           = private_nh_->create_service<dsr_msgs2::srv::GetRobotSystem>("system/get_robot_system", DRHWInterface::get_robot_system_cb);         
@@ -799,17 +782,18 @@ namespace dsr_control2{
         m_nh_srv_set_safe_stop_reset_type   = private_nh_->create_service<dsr_msgs2::srv::SetSafeStopResetType>("system/set_safe_stop_reset_type", DRHWInterface::set_safe_stop_reset_type_cb);           
         m_nh_srv_get_last_alarm             = private_nh_->create_service<dsr_msgs2::srv::GetLastAlarm>("system/get_last_alarm", DRHWInterface::get_last_alarm_cb);   
 
-        //  motion
-//OK    m_nh_srv_move_joint                 = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::move_joint_cb);                                
-//OK    m_nh_srv_move_line                  = private_nh_->create_service<dsr_msgs2::srv::MoveLine>("motion/move_line", DRHWInterface::move_line_cb);                        
-//OK    m_nh_srv_move_jointx                = private_nh_->create_service<dsr_msgs2::srv::MoveJointx>("motion/move_jointx", DRHWInterface::move_jointx_cb);               
-//OK    m_nh_srv_move_circle                = private_nh_->create_service<dsr_msgs2::srv::MoveCircle>("motion/move_circle", DRHWInterface::move_circle_cb);       
-//OK    m_nh_srv_move_spline_joint          = private_nh_->create_service<dsr_msgs2::srv::MoveSplineJoint>("motion/move_spline_joint", DRHWInterface::move_spline_joint_cb);      
-//OK    m_nh_srv_move_spline_task           = private_nh_->create_service<dsr_msgs2::srv::MoveSplineTask>("motion/move_spline_task", DRHWInterface::move_spline_task_cb);          
-//OK    m_nh_srv_move_blending              = private_nh_->create_service<dsr_msgs2::srv::MoveBlending>("motion/move_blending", DRHWInterface::move_blending_cb);          
-//OK    m_nh_srv_move_spiral                = private_nh_->create_service<dsr_msgs2::srv::MoveSpiral>("motion/move_spiral", DRHWInterface::move_spiral_cb);              
-//OK    m_nh_srv_move_periodic              = private_nh_->create_service<dsr_msgs2::srv::MovePeriodic>("motion/move_periodic", DRHWInterface::move_periodic_cb);              
-        m_nh_srv_move_wait                  = private_nh_->create_service<dsr_msgs2::srv::MoveWait>("motion/move_wait", DRHWInterface::move_wait_cb);                  
+        //  motion Operations
+        //auto server_motion_service_0  = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::movej_cb);
+        m_nh_srv_move_joint                 = private_nh_->create_service<dsr_msgs2::srv::MoveJoint>("motion/move_joint", DRHWInterface::movej_cb);                                
+        m_nh_srv_move_line                  = private_nh_->create_service<dsr_msgs2::srv::MoveLine>("motion/move_line", DRHWInterface::movel_cb);                        
+        m_nh_srv_move_jointx                = private_nh_->create_service<dsr_msgs2::srv::MoveJointx>("motion/move_jointx", DRHWInterface::movejx_cb);               
+        m_nh_srv_move_circle                = private_nh_->create_service<dsr_msgs2::srv::MoveCircle>("motion/move_circle", DRHWInterface::movec_cb);       
+        m_nh_srv_move_spline_joint          = private_nh_->create_service<dsr_msgs2::srv::MoveSplineJoint>("motion/move_spline_joint", DRHWInterface::movesj_cb);      
+        m_nh_srv_move_spline_task           = private_nh_->create_service<dsr_msgs2::srv::MoveSplineTask>("motion/move_spline_task", DRHWInterface::movesx_cb);          
+        m_nh_srv_move_blending              = private_nh_->create_service<dsr_msgs2::srv::MoveBlending>("motion/move_blending", DRHWInterface::moveb_cb);          
+        m_nh_srv_move_spiral                = private_nh_->create_service<dsr_msgs2::srv::MoveSpiral>("motion/move_spiral", DRHWInterface::movespiral_cb);              
+        m_nh_srv_move_periodic              = private_nh_->create_service<dsr_msgs2::srv::MovePeriodic>("motion/move_periodic", DRHWInterface::moveperiodic_cb);              
+        m_nh_srv_move_wait                  = private_nh_->create_service<dsr_msgs2::srv::MoveWait>("motion/move_wait", DRHWInterface::movewait_cb);                  
         m_nh_srv_jog                        = private_nh_->create_service<dsr_msgs2::srv::Jog>("motion/jog", DRHWInterface::jog_cb);              
         m_nh_srv_jog_multi                  = private_nh_->create_service<dsr_msgs2::srv::JogMulti>("motion/jog_multi", DRHWInterface::jog_multi_cb);                      
         m_nh_srv_move_pause                 = private_nh_->create_service<dsr_msgs2::srv::MovePause>("motion/move_pause", DRHWInterface::move_pause_cb);                      
@@ -872,54 +856,53 @@ namespace dsr_control2{
         m_nh_srv_get_workpiece_weight           = private_nh_->create_service<dsr_msgs2::srv::GetWorkpieceWeight>("force/get_workpiece_weight", DRHWInterface::get_workpiece_weight_cb);          
         m_nh_srv_reset_workpiece_weight         = private_nh_->create_service<dsr_msgs2::srv::ResetWorkpieceWeight>("force/reset_workpiece_weight", DRHWInterface::reset_workpiece_weight_cb);          
 
-        //  io
-        m_nh_srv_set_ctrl_box_digital_output        = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxDigitalOutput>("io/set_ctrl_box_digital_output", DRHWInterface::set_ctrl_box_digital_output_cb);    
-        m_nh_srv_get_ctrl_box_digital_input         = private_nh_->create_service<dsr_msgs2::srv::GetCtrlBoxDigitalInput>("io/get_ctrl_box_digital_input", DRHWInterface::get_ctrl_box_digital_input_cb);   
+        //  IO
+        m_nh_srv_set_ctrl_box_digital_output        = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxDigitalOutput>("io/set_ctrl_box_digital_output", DRHWInterface::set_digital_output_cb);    
+        m_nh_srv_get_ctrl_box_digital_input         = private_nh_->create_service<dsr_msgs2::srv::GetCtrlBoxDigitalInput>("io/get_ctrl_box_digital_input", DRHWInterface::get_digital_input_cb);   
         m_nh_srv_set_tool_digital_output            = private_nh_->create_service<dsr_msgs2::srv::SetToolDigitalOutput>("io/set_tool_digital_output", DRHWInterface::set_tool_digital_output_cb);   
         m_nh_srv_get_tool_digital_input             = private_nh_->create_service<dsr_msgs2::srv::GetToolDigitalInput>("io/get_tool_digital_input", DRHWInterface::get_tool_digital_input_cb);   
-        m_nh_srv_set_ctrl_box_analog_output         = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxAnalogOutput>("io/set_ctrl_box_analog_output", DRHWInterface::set_ctrl_box_analog_output_cb);   
-        m_nh_srv_get_ctrl_box_analog_input          = private_nh_->create_service<dsr_msgs2::srv::GetCtrlBoxAnalogInput>("io/get_ctrl_box_analog_input", DRHWInterface::get_ctrl_box_analog_input_cb);   
-        m_nh_srv_set_ctrl_box_analog_output_type    = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType>("io/set_ctrl_box_analog_output_type", DRHWInterface::set_ctrl_box_analog_output_type_cb);   
-        m_nh_srv_set_ctrl_box_analog_input_type     = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxAnalogInputType>("io/set_ctrl_box_analog_input_type", DRHWInterface::set_ctrl_box_analog_input_type_cb);       
-        m_nh_srv_get_ctrl_box_digital_output        = private_nh_->create_service<dsr_msgs2::srv::GetCtrlBoxDigitalOutput>("io/get_ctrl_box_digital_output", DRHWInterface::get_ctrl_box_digital_output_cb);   
+        m_nh_srv_set_ctrl_box_analog_output         = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxAnalogOutput>("io/set_ctrl_box_analog_output", DRHWInterface::set_analog_output_cb);   
+        m_nh_srv_get_ctrl_box_analog_input          = private_nh_->create_service<dsr_msgs2::srv::GetCtrlBoxAnalogInput>("io/get_ctrl_box_analog_input", DRHWInterface::get_analog_input_cb);   
+        m_nh_srv_set_ctrl_box_analog_output_type    = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType>("io/set_ctrl_box_analog_output_type", DRHWInterface::set_analog_output_type_cb);   
+        m_nh_srv_set_ctrl_box_analog_input_type     = private_nh_->create_service<dsr_msgs2::srv::SetCtrlBoxAnalogInputType>("io/set_ctrl_box_analog_input_type", DRHWInterface::set_analog_input_type_cb);       
+        m_nh_srv_get_ctrl_box_digital_output        = private_nh_->create_service<dsr_msgs2::srv::GetCtrlBoxDigitalOutput>("io/get_ctrl_box_digital_output", DRHWInterface::get_digital_output_cb);   
         m_nh_srv_get_tool_digital_output            = private_nh_->create_service<dsr_msgs2::srv::GetToolDigitalOutput>("io/get_tool_digital_output", DRHWInterface::get_tool_digital_output_cb);   
 
-        //  modbus
+        //  Modbus
         m_nh_srv_set_modbus_output      = private_nh_->create_service<dsr_msgs2::srv::SetModbusOutput>("modbus/set_modbus_output", DRHWInterface::set_modbus_output_cb);    
         m_nh_srv_get_modbus_input       = private_nh_->create_service<dsr_msgs2::srv::GetModbusInput>("modbus/get_modbus_input", DRHWInterface::get_modbus_input_cb);    
         m_nh_srv_config_create_modbus   = private_nh_->create_service<dsr_msgs2::srv::ConfigCreateModbus>("modbus/config_create_modbus", DRHWInterface::config_create_modbus_cb);
         m_nh_srv_config_delete_modbus   = private_nh_->create_service<dsr_msgs2::srv::ConfigDeleteModbus>("modbus/config_delete_modbus", DRHWInterface::config_delete_modbus_cb);
 
-        //  drl
-        m_nh_srv_drl_pause              = private_nh_->create_service<dsr_msgs2::srv::DrlPause>("drl/drl_pause", DRHWInterface::drl_pause_cb);                         
-        m_nh_srv_drl_start              = private_nh_->create_service<dsr_msgs2::srv::DrlStart>("drl/drl_start", DRHWInterface::drl_start_cb);    
-        m_nh_srv_drl_stop               = private_nh_->create_service<dsr_msgs2::srv::DrlStop>("drl/drl_stop", DRHWInterface::drl_stop_cb);    
-        m_nh_srv_drl_resume             = private_nh_->create_service<dsr_msgs2::srv::DrlResume>("drl/drl_resume", DRHWInterface::drl_resume_cb);        
-        m_nh_srv_get_drl_state          = private_nh_->create_service<dsr_msgs2::srv::GetDrlState>("drl/get_drl_state", DRHWInterface::get_drl_state_cb);       
-
-        //  tcp
+        //  TCP
         m_nh_srv_config_create_tcp      = private_nh_->create_service<dsr_msgs2::srv::ConfigCreateTcp>("tcp/config_create_tcp", DRHWInterface::config_create_tcp_cb);    
         m_nh_srv_config_delete_tcp      = private_nh_->create_service<dsr_msgs2::srv::ConfigDeleteTcp>("tcp/config_delete_tcp", DRHWInterface::config_delete_tcp_cb);  
         m_nh_srv_get_current_tcp        = private_nh_->create_service<dsr_msgs2::srv::GetCurrentTcp>("tcp/get_current_tcp", DRHWInterface::get_current_tcp_cb);       
         m_nh_srv_set_current_tcp        = private_nh_->create_service<dsr_msgs2::srv::SetCurrentTcp>("tcp/set_current_tcp", DRHWInterface::set_current_tcp_cb);       
 
-        //  tool
+        //  Tool
         m_nh_srv_config_create_tool     = private_nh_->create_service<dsr_msgs2::srv::ConfigCreateTool>("tool/config_create_tool", DRHWInterface::config_create_tool_cb); 
         m_nh_srv_config_delete_tool     = private_nh_->create_service<dsr_msgs2::srv::ConfigDeleteTool>("tool/config_delete_tool", DRHWInterface::config_delete_tool_cb);    
         m_nh_srv_get_current_tool       = private_nh_->create_service<dsr_msgs2::srv::GetCurrentTool>("tool/get_current_tool", DRHWInterface::get_current_tool_cb);     
         m_nh_srv_set_current_tool       = private_nh_->create_service<dsr_msgs2::srv::SetCurrentTool>("tool/set_current_tool", DRHWInterface::set_current_tool_cb);     
         m_nh_srv_set_tool_shape         = private_nh_->create_service<dsr_msgs2::srv::SetToolShape>("tool/set_tool_shape", DRHWInterface::set_tool_shape_cb); 
 
-        //  gripper
-        m_nh_srv_robotiq2_f_open        = private_nh_->create_service<dsr_msgs2::srv::Robotiq2FOpen>("gripper/robotiq2_f_open", DRHWInterface::robotiq2_f_open_cb); 
-        m_nh_srv_robotiq2_f_close       = private_nh_->create_service<dsr_msgs2::srv::Robotiq2FClose>("gripper/robotiq2_f_close", DRHWInterface::robotiq2_f_close_cb);
-        m_nh_srv_robotiq2_f_move        = private_nh_->create_service<dsr_msgs2::srv::Robotiq2FMove>("gripper/robotiq2_f_move", DRHWInterface::robotiq2_f_move_cb);
+        //  DRL
+        m_nh_srv_drl_pause              = private_nh_->create_service<dsr_msgs2::srv::DrlPause>("drl/drl_pause", DRHWInterface::drl_pause_cb);                         
+        m_nh_srv_drl_start              = private_nh_->create_service<dsr_msgs2::srv::DrlStart>("drl/drl_start", DRHWInterface::drl_start_cb);    
+        m_nh_srv_drl_stop               = private_nh_->create_service<dsr_msgs2::srv::DrlStop>("drl/drl_stop", DRHWInterface::drl_stop_cb);    
+        m_nh_srv_drl_resume             = private_nh_->create_service<dsr_msgs2::srv::DrlResume>("drl/drl_resume", DRHWInterface::drl_resume_cb);        
+        m_nh_srv_get_drl_state          = private_nh_->create_service<dsr_msgs2::srv::GetDrlState>("drl/get_drl_state", DRHWInterface::get_drl_state_cb);       
 
-        //  serial
+        //  Gripper
+        m_nh_srv_robotiq2_f_open        = private_nh_->create_service<dsr_msgs2::srv::Robotiq2FOpen>("gripper/robotiq2_f_open", DRHWInterface::robotiq_2f_open_cb); 
+        m_nh_srv_robotiq2_f_close       = private_nh_->create_service<dsr_msgs2::srv::Robotiq2FClose>("gripper/robotiq2_f_close", DRHWInterface::robotiq_2f_close_cb);
+        m_nh_srv_robotiq2_f_move        = private_nh_->create_service<dsr_msgs2::srv::Robotiq2FMove>("gripper/robotiq2_f_move", DRHWInterface::robotiq_2f_move_cb);
+
+        //  Serial
         m_nh_srv_serial_send_data       = private_nh_->create_service<dsr_msgs2::srv::SerialSendData>("gripper/serial_send_data", DRHWInterface::serial_send_data_cb);
 
-
-
+        memset(&g_joints,    0x00, sizeof(ROBOT_JOINT_DATA)*NUM_JOINT);
         memset(&g_stDrState, 0x00, sizeof(DR_STATE)); 
         memset(&g_stDrError, 0x00, sizeof(DR_ERROR)); 
         memset(&m_stDrState, 0x00, sizeof(DR_STATE));
@@ -972,13 +955,13 @@ namespace dsr_control2{
             printf("joint_name = %s",joint_name);
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"joint_name = %s",joint_name);
 
-            hardware_interface::JointStateHandle state_handle(joint_name, &m_joints[i].pos, &m_joints[i].vel, &m_joints[i].eff);       
+            hardware_interface::JointStateHandle state_handle(joint_name, &g_joints[i].pos, &g_joints[i].vel, &g_joints[i].eff);       
             joint_state_handles_[i] = state_handle;
             if (register_joint_state_handle(&joint_state_handles_[i]) != hardware_interface::return_type::OK) {
                 throw std::runtime_error("unable to register " + joint_state_handles_[i].get_name());
             }
     
-            hardware_interface::JointCommandHandle command_handle(joint_name, &m_joints[i].cmd);
+            hardware_interface::JointCommandHandle command_handle(joint_name, &g_joints[i].cmd);
             joint_command_handles_[i] = command_handle;
             if (register_joint_command_handle(&joint_command_handles_[i]) != hardware_interface::return_type::OK)
             {
@@ -993,7 +976,7 @@ namespace dsr_control2{
         {
             printf("joint_name = %s",joint_name);
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"joint_name = %s",joint_name);
-            register_joint(joint_name, "position", m_joints[i].pos);
+            register_joint(joint_name, "position", g_joints[i].pos);
             ++i;
         }
 
@@ -1035,8 +1018,8 @@ namespace dsr_control2{
         if(Drfl.OpenConnection(host, nServerPort))
         {
             //--- connect Emulator ? ------------------------------    
-            if(host == "127.0.0.1") m_bIsEmulatorMode = true; 
-            else                    m_bIsEmulatorMode = false;
+            if(host == "127.0.0.1") g_bIsEmulatorMode = true; 
+            else                    g_bIsEmulatorMode = false;
 
             //--- Get version -------------------------------------            
             SYSTEM_VERSION tSysVerion = {'\0', };
@@ -1051,7 +1034,7 @@ namespace dsr_control2{
             if(m_nVersionDRCF < 100000) m_nVersionDRCF += 100000; 
 
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"_______________________________________________");   
-            if(m_bIsEmulatorMode) RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    Emulator Mode");
+            if(g_bIsEmulatorMode) RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    Emulator Mode");
             else                  RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    Real Robot Mode");
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    DRCF version = %s",tSysVerion._szController);
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    DRFL version = %s",Drfl.GetLibraryVersion());
@@ -1082,10 +1065,10 @@ namespace dsr_control2{
             if(mode == "real") eTargetSystem = ROBOT_SYSTEM_REAL;
             assert(Drfl.SetRobotSystem(eTargetSystem));
 
-            // to compare with m_joints[].cmd
+            // to compare with g_joints[].cmd
             for(int i = 0; i < NUM_JOINT; i++){
-                RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[init]::read %d-pos: %7.3f", i, m_joints[i].cmd);
-                m_fCmd_[i] = m_joints[i].cmd;
+                RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[init]::read %d-pos: %7.3f", i, g_joints[i].cmd);
+                m_fCmd_[i] = g_joints[i].cmd;
             }
 
             return hardware_interface::return_type::OK;
@@ -1108,8 +1091,8 @@ namespace dsr_control2{
         for(int i = 0; i < NUM_JOINT; i++){
             //ROS2 ROS_DEBUG("[DRHWInterface::read] %d-pos: %7.3f", i, pose->_fPosition[i]);
             ///RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[DRHWInterface::read] %d-pos: %7.3f", i, pose->_fPosition[i]);
-            m_joints[i].pos = deg2rad(pose->_fPosition[i]);	//update pos to '/joint_states'
-            msg.data.push_back(m_joints[i].pos);
+            g_joints[i].pos = deg2rad(pose->_fPosition[i]);	//update pos to '/joint_states'
+            msg.data.push_back(g_joints[i].pos);
         }
 #else      
         std_msgs::msg::Float64MultiArray msg;
@@ -1117,12 +1100,12 @@ namespace dsr_control2{
         size_t i = 0;
         for (auto & joint_name : joint_names)
         {
-            m_joints[i].pos = deg2rad(pose->_fPosition[i]);
+            g_joints[i].pos = deg2rad(pose->_fPosition[i]);
             
             auto joint_handle = std::make_shared<hardware_interface::JointHandle>(joint_name, "position");
             get_joint_handle(*joint_handle);
-            joint_handle->set_value(m_joints[i].pos); 
-            msg.data.push_back(m_joints[i].pos);
+            joint_handle->set_value(g_joints[i].pos); 
+            msg.data.push_back(g_joints[i].pos);
             //RCLCPP_INFO(rclcpp::get_logger("+++++gazebo msg++++++"),"[init]::read %d-pos: %7.3f", i, msg.data[i]);
             ++i;
         }
@@ -1130,7 +1113,7 @@ namespace dsr_control2{
 #endif   
         
 //TODO        if(m_strRobotGripper != "none"){
-//TODO            msg.data.push_back(m_joints[6].pos);
+//TODO            msg.data.push_back(g_joints[6].pos);
 //TODO        }
 //TODO        m_PubtoGazebo.publish(msg);
 
@@ -1146,7 +1129,7 @@ namespace dsr_control2{
         for(int i = 0; i < NUM_JOINT; i++){
             //ROS2 ROS_DEBUG("[DRHWInterface::read] %d-pos: %7.3f", i, pose->_fPosition[i]);
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[DRHWInterface::write] %d-pos: %7.3f", i, pose->_fPosition[i]);
-            m_joints[i].cmd = deg2rad(pose->_fPosition[i]);	//update pos to Rviz
+            g_joints[i].cmd = deg2rad(pose->_fPosition[i]);	//update pos to Rviz
         }
 */
         return hardware_interface::return_type::OK;
@@ -1245,6 +1228,8 @@ namespace dsr_control2{
         float fTargetPos[MAX_SPLINE_POINT][NUM_JOINT] = {0.0, };
         int nCntTargetPos =0; 
 
+        float fTargetVel[NUM_JOINT]= {0.0, };
+        float fTargetAcc[NUM_JOINT]= {0.0, };
         nCntTargetPos = msg->trajectory[0].joint_trajectory.points.size();
         /*
         if(nCntTargetPos > MAX_SPLINE_POINT)
@@ -1300,12 +1285,13 @@ namespace dsr_control2{
 
         RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[trajectory] last targetTime = %f", targetTime);
 
-        Drfl.MoveSJ(fTargetPos, nCntTargetPos, 0.0, 0.0, targetTime, (MOVE_MODE)MOVE_MODE_ABSOLUTE);
+        //old Drfl.MoveSJ(fTargetPos, nCntTargetPos, 0.0, 0.0, targetTime, (MOVE_MODE)MOVE_MODE_ABSOLUTE);
+		Drfl.MoveSJ(fTargetPos, nCntTargetPos, fTargetVel[0], fTargetAcc[0], targetTime, (MOVE_MODE)MOVE_MODE_ABSOLUTE); // need update API
 
         //Drfl.MoveJAsync(degrees.data(), 30, 30, 0, MOVE_MODE_ABSOLUTE, BLENDING_SPEED_TYPE_OVERRIDE);
         //for(int i = 0; i < NUM_JOINT; i++){
         //    RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"[]::cmd %d-pos: %7.3f", i, joints[i].cmd);
-        //    cmd_[i] = m_joints[i].cmd;
+        //    cmd_[i] = g_joints[i].cmd;
         //}
 
 
@@ -1317,7 +1303,7 @@ namespace dsr_control2{
     }
 
     //----- SYSTEM Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::set_robot_mode_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotMode::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotMode::Response> res){
+    bool DRHWInterface::set_robot_mode_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotMode::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotMode::Response> res){
         RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::set_robot_mode_cb() called and calling Drfl.SetRobotMode(%d)",req->robot_mode);
 
         /*ROS2     
@@ -1326,61 +1312,103 @@ namespace dsr_control2{
         return true;
         */
         res->success = Drfl.SetRobotMode((ROBOT_MODE)req->robot_mode); 
+        return true;
     }
-    void DRHWInterface::get_robot_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotMode::Response> res)
+    bool DRHWInterface::get_robot_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotMode::Response> res)
     {       
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_robot_mode_cb() called and calling Drfl.GetRobotMode()");
+        res->robot_mode = Drfl.GetRobotMode();
+        res->success = true;
+        return true;
     }      
-    void DRHWInterface::set_robot_system_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotSystem::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotSystem::Response> res)
+    bool DRHWInterface::set_robot_system_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotSystem::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotSystem::Response> res)
     { 
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::set_robot_system_cb() called and calling Drfl.SetRobotSystem(%d)",req->robot_system);
+
+        res->success = Drfl.SetRobotSystem((ROBOT_SYSTEM)req->robot_system);
+        return true;
     }         
-    void DRHWInterface::get_robot_system_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotSystem::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotSystem::Response> res)
+    bool DRHWInterface::get_robot_system_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotSystem::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotSystem::Response> res)
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_robot_system_cb() called and calling Drfl.GetRobotSystem()");
+
+        res->robot_system = Drfl.GetRobotSystem();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_robot_state_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotState::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotState::Response> res)        
+    bool DRHWInterface::get_robot_state_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotState::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotState::Response> res)        
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_robot_state_cb() called and calling Drfl.GetRobotState()");
+
+        res->robot_state = Drfl.GetRobotState();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::set_robot_speed_mode_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotSpeedMode::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotSpeedMode::Response> res)    
+    bool DRHWInterface::set_robot_speed_mode_cb(const std::shared_ptr<dsr_msgs2::srv::SetRobotSpeedMode::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRobotSpeedMode::Response> res)    
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::set_robot_speed_mode_cb() called and calling Drfl.SetRobotSpeedMode(%d)",req->speed_mode);
+
+        res->success = Drfl.SetRobotSpeedMode((SPEED_MODE)req->speed_mode);
+        return true;
     }
-    void DRHWInterface::get_robot_speed_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotSpeedMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotSpeedMode::Response> res)       
+    bool DRHWInterface::get_robot_speed_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetRobotSpeedMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetRobotSpeedMode::Response> res)       
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_robot_speed_mode_cb() called and calling Drfl.GetRobotSpeedMode()");
+
+        res->speed_mode = Drfl.GetRobotSpeedMode();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_current_pose_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPose::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPose::Response> res)   
+    bool DRHWInterface::get_current_pose_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPose::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPose::Response> res)   
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_current_pose_cb() called and calling Drfl.GetCurrentPose(%d)",req->space_type);
+
+        LPROBOT_POSE robot_pos = Drfl.GetCurrentPose((ROBOT_SPACE)req->space_type);
+        for(int i = 0; i < NUM_TASK; i++){
+            res->pos[i] = robot_pos->_fPosition[i];
+        }
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::set_safe_stop_reset_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetSafeStopResetType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetSafeStopResetType::Response> res)     
+    bool DRHWInterface::set_safe_stop_reset_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetSafeStopResetType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetSafeStopResetType::Response> res)     
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::set_safe_stop_reset_type_cb() called and calling Drfl.SetSafeStopResetType(%d)",req->reset_type);
+        Drfl.SetSafeStopResetType((SAFE_STOP_RESET_TYPE)req->reset_type);
+        res->success = true;                           
+        return true;
     }
-    void DRHWInterface::get_last_alarm_cb(const std::shared_ptr<dsr_msgs2::srv::GetLastAlarm::Request> req, std::shared_ptr<dsr_msgs2::srv::GetLastAlarm::Response> res)   
+    bool DRHWInterface::get_last_alarm_cb(const std::shared_ptr<dsr_msgs2::srv::GetLastAlarm::Request> req, std::shared_ptr<dsr_msgs2::srv::GetLastAlarm::Response> res)   
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_last_alarm_cb() called and calling Drfl.GetLastAlarm()");
+        res->log_alarm.level = Drfl.GetLastAlarm()->_iLevel;
+        res->log_alarm.group = Drfl.GetLastAlarm()->_iGroup;
+        res->log_alarm.index = Drfl.GetLastAlarm()->_iIndex;
+        for(int i = 0; i < 3; i++){
+            std::string str_temp(Drfl.GetLastAlarm()->_szParam[i]);
+            res->log_alarm.param[i] = str_temp;
+        }
+        res->success = true;
+        return true;
     }
 
 
     //----- MOTION Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::move_joint_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJoint::Response> res)
+    bool DRHWInterface::movej_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJoint::Response> res)
     {
         res->success = false;
         std::array<float, NUM_JOINT> target_pos;
         std::copy(req->pos.cbegin(), req->pos.cend(), target_pos.begin());
         if(req->sync_type == 0){
-            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::move_joint_cb() called and calling Drfl.MoveJ");
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movej_cb() called and calling Drfl.MoveJ");
             res->success = Drfl.MoveJ(target_pos.data(), req->vel, req->acc, req->time, (MOVE_MODE)req->mode, req->radius, (BLENDING_SPEED_TYPE)req->blend_type);   
         }
         else{
-            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::move_joint_cb() called and calling Drfl.MoveJAsync");
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movej_cb() called and calling Drfl.MoveJAsync");
             res->success = Drfl.MoveJAsync(target_pos.data(), req->vel, req->acc, req->time, (MOVE_MODE)req->mode, (BLENDING_SPEED_TYPE)req->blend_type);
         }
+        return true;
     }
-    void DRHWInterface::move_line_cb(const std::shared_ptr<dsr_msgs2::srv::MoveLine::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveLine::Response> res)
+    bool DRHWInterface::movel_cb(const std::shared_ptr<dsr_msgs2::srv::MoveLine::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveLine::Response> res)
     {
         res->success = false;
         std::array<float, NUM_JOINT> target_pos;
@@ -1391,15 +1419,16 @@ namespace dsr_control2{
         std::copy(req->acc.cbegin(), req->acc.cend(), target_acc.begin());
 
         if(req->sync_type == 0){
-            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::move_line_cb() called and calling Drfl.MoveL");
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movel_cb() called and calling Drfl.MoveL");
             res->success = Drfl.MoveL(target_pos.data(), target_vel.data(), target_acc.data(), req->time, (MOVE_MODE)req->mode, (MOVE_REFERENCE)req->ref, req->radius, (BLENDING_SPEED_TYPE)req->blend_type);   
         }
         else{
-            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::move_line_cb() called and calling Drfl.MoveLAsync");
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movel_cb() called and calling Drfl.MoveLAsync");
             res->success = Drfl.MoveLAsync(target_pos.data(), target_vel.data(), target_acc.data(), req->time, (MOVE_MODE)req->mode, (MOVE_REFERENCE)req->ref, (BLENDING_SPEED_TYPE)req->blend_type);
         }
+        return true;
     }
-    void DRHWInterface::move_jointx_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJointx::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJointx::Response> res)               
+    bool DRHWInterface::movejx_cb(const std::shared_ptr<dsr_msgs2::srv::MoveJointx::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveJointx::Response> res)               
     {
         res->success = false;
         std::array<float, NUM_TASK> target_pos;
@@ -1412,8 +1441,9 @@ namespace dsr_control2{
             //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movejx_cb() called and calling Drfl.MoveJXAsync");
             res->success = Drfl.MoveJXAsync(target_pos.data(), req->sol, req->vel, req->acc, req->time, (MOVE_MODE)req->mode, (MOVE_REFERENCE)req->ref, (BLENDING_SPEED_TYPE)req->blend_type);    
         }
+        return true;
     }
-    void DRHWInterface::move_circle_cb(const std::shared_ptr<dsr_msgs2::srv::MoveCircle::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveCircle::Response> res)       
+    bool DRHWInterface::movec_cb(const std::shared_ptr<dsr_msgs2::srv::MoveCircle::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveCircle::Response> res)       
     {
         res->success = false;
         float fTargetPos[2][NUM_TASK];
@@ -1437,11 +1467,14 @@ namespace dsr_control2{
             //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movec_cb() called and calling Drfl.MoveCAsync");
             res->success = Drfl.MoveCAsync(fTargetPos, fTargetVel, fTargetAcc, req->time, (MOVE_MODE)req->mode, (MOVE_REFERENCE)req->ref, (BLENDING_SPEED_TYPE)req->blend_type);  
         }
+        return true;
     }
-    void DRHWInterface::move_spline_joint_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSplineJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSplineJoint::Response> res)      
+    bool DRHWInterface::movesj_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSplineJoint::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSplineJoint::Response> res)      
     {
         res->success = false;
         float fTargetPos[MAX_SPLINE_POINT][NUM_JOINT];
+        float fTargetVel[NUM_JOINT]= {0.0, };
+        float fTargetAcc[NUM_JOINT]= {0.0, };
 
         for(int i=0; i<req->pos_cnt; i++){
             for(int j=0; j<NUM_JOINT; j++){
@@ -1450,15 +1483,18 @@ namespace dsr_control2{
             }
         }
         if(req->sync_type == 0){
-            //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movesj_cb() called and calling Drfl.MoveSJ");
-            res->success = Drfl.MoveSJ(fTargetPos, req->pos_cnt, req->vel, req->acc, req->time, (MOVE_MODE)req->mode);
+            //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movejx_cb() called and calling Drfl.MoveSJ");
+            //res->success = Drfl.MoveSJ(fTargetPos, req->pos_cnt, req->vel, req->acc, req->time, (MOVE_MODE)req->mode);
+            res->success = Drfl.MoveSJ(fTargetPos, req->pos_cnt, fTargetVel[0], fTargetAcc[0], req->time, (MOVE_MODE)req->mode); //need updata API
         }
         else{
-            //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movesj_cb() called and calling Drfl.MoveSJAsync");
-            res->success = Drfl.MoveSJAsync(fTargetPos, req->pos_cnt, req->vel, req->acc, req->time, (MOVE_MODE)req->mode);
+            //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movejx_cb() called and calling Drfl.MoveSJAsync");
+            //res->success = Drfl.MoveSJAsync(fTargetPos, req->pos_cnt, req->vel, req->acc, req->time, (MOVE_MODE)req->mode);
+            res->success = Drfl.MoveSJAsync(fTargetPos, req->pos_cnt, fTargetVel[0], fTargetAcc[0], req->time, (MOVE_MODE)req->mode); //need updata API
         }
+        return true;
     }
-    void DRHWInterface::move_spline_task_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSplineTask::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSplineTask::Response> res)          
+    bool DRHWInterface::movesx_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSplineTask::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSplineTask::Response> res)          
     {
         res->success = false;
         float fTargetPos[MAX_SPLINE_POINT][NUM_TASK];
@@ -1485,8 +1521,9 @@ namespace dsr_control2{
             //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movesx_cb() called and calling Drfl.MoveSXAsync");
             res->success = Drfl.MoveSXAsync(fTargetPos, req->pos_cnt, fTargetVel, fTargetAcc, req->time, (MOVE_MODE)req->mode, (MOVE_REFERENCE)req->ref, (SPLINE_VELOCITY_OPTION)req->opt);
         }
+        return true;
     }
-    void DRHWInterface::move_blending_cb(const std::shared_ptr<dsr_msgs2::srv::MoveBlending::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveBlending::Response> res)          
+    bool DRHWInterface::moveb_cb(const std::shared_ptr<dsr_msgs2::srv::MoveBlending::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveBlending::Response> res)          
     {
         res->success = false;
         MOVE_POSB posb[req->pos_cnt];
@@ -1527,8 +1564,9 @@ namespace dsr_control2{
             //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::moveb_cb() called and calling Drfl.MoveBAsync");
             res->success = Drfl.MoveBAsync(posb, req->pos_cnt, target_vel.data(), target_acc.data(), req->time, (MOVE_MODE)req->mode, (MOVE_REFERENCE)req->ref);
         }
+        return true;
     }
-    void DRHWInterface::move_spiral_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSpiral::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSpiral::Response> res)              
+    bool DRHWInterface::movespiral_cb(const std::shared_ptr<dsr_msgs2::srv::MoveSpiral::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveSpiral::Response> res)              
     {
         res->success = false;
         std::array<float, 2> target_vel;
@@ -1545,9 +1583,9 @@ namespace dsr_control2{
             //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movespiral_cb() called and calling Drfl.MoveSpiralAsync");
             res->success = Drfl.MoveSpiralAsync((TASK_AXIS)req->task_axis, req->revolution, req->max_radius, req->max_length, target_vel.data(), target_acc.data(), req->time, (MOVE_REFERENCE)req->ref);
         }
-
+        return true;
     }
-    void DRHWInterface::move_periodic_cb(const std::shared_ptr<dsr_msgs2::srv::MovePeriodic::Request> req, std::shared_ptr<dsr_msgs2::srv::MovePeriodic::Response> res)              
+    bool DRHWInterface::moveperiodic_cb(const std::shared_ptr<dsr_msgs2::srv::MovePeriodic::Request> req, std::shared_ptr<dsr_msgs2::srv::MovePeriodic::Response> res)              
     {
         res->success = false;
         std::array<float, NUM_TASK> target_amp;
@@ -1562,82 +1600,204 @@ namespace dsr_control2{
             RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::moveperiodic_cb() called and calling Drfl.MovePeriodicAsync");
             res->success = Drfl.MovePeriodicAsync(target_amp.data(), target_periodic.data(), req->acc, req->repeat, (MOVE_REFERENCE)req->ref);
         }
-
+        return true;
     }
-    void DRHWInterface::move_wait_cb(const std::shared_ptr<dsr_msgs2::srv::MoveWait::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveWait::Response> res)                  
+    bool DRHWInterface::movewait_cb(const std::shared_ptr<dsr_msgs2::srv::MoveWait::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveWait::Response> res)                  
     {
         res->success = false;
         //RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::movewait_cb() called and calling Drfl.MoveWait");
         res->success = Drfl.MoveWait();
         return true;
     }
+    bool DRHWInterface::jog_cb(const std::shared_ptr<dsr_msgs2::srv::Jog::Request> req, std::shared_ptr<dsr_msgs2::srv::Jog::Response> res)              
+    {
+        res->success = false;
+        res->success = Drfl.Jog((JOG_AXIS)req->jog_axis, (MOVE_REFERENCE)req->move_reference, req->speed);
+        return true;
+    }
 
+    bool DRHWInterface::jog_multi_cb(const std::shared_ptr<dsr_msgs2::srv::JogMulti::Request> req, std::shared_ptr<dsr_msgs2::srv::JogMulti::Response> res)                      
+    {
+        res->success = false;
 
+        std::array<float, NUM_JOINT> target_jog;
+        std::copy(req->jog_axis.cbegin(), req->jog_axis.cend(), target_jog.begin());
 
+        res->success = Drfl.MultiJog(target_jog.data(), (MOVE_REFERENCE)req->move_reference, req->speed);
+        return true;
+    }
+    bool DRHWInterface::move_stop_cb(const std::shared_ptr<dsr_msgs2::srv::MoveStop::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveStop::Response> res)                  
+    {
+        res->success = false;
+        res->success = Drfl.MoveStop((STOP_TYPE)req->stop_mode);
+        return true;
+    }
+    bool DRHWInterface::move_resume_cb(const std::shared_ptr<dsr_msgs2::srv::MoveResume::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveResume::Response> res)                  
+    {
+        res->success = false;
+        res->success = Drfl.MoveResume();
+        return true;
+    }
+    bool DRHWInterface::move_pause_cb(const std::shared_ptr<dsr_msgs2::srv::MovePause::Request> req, std::shared_ptr<dsr_msgs2::srv::MovePause::Response> res)                      
+    {
+        res->success = false;
+        res->success = Drfl.MovePause();
+        return true;
+    }
+    bool DRHWInterface::trans_cb(const std::shared_ptr<dsr_msgs2::srv::Trans::Request> req, std::shared_ptr<dsr_msgs2::srv::Trans::Response> res)                  
+    {
+        res->success = false;
+        std::array<float, NUM_TASK> target_pos;
+        std::array<float, NUM_TASK> delta_pos;
+ 
+        std::copy(req->pos.cbegin(), req->pos.cend(), target_pos.begin());
+        std::copy(req->delta.cbegin(), req->delta.cend(), delta_pos.begin());
+  
+        LPROBOT_POSE robot_pos = Drfl.CalTrans(target_pos.data(), delta_pos.data(), (COORDINATE_SYSTEM)req->ref, (COORDINATE_SYSTEM)req->ref_out);
+        for(int i=0; i<NUM_TASK; i++){
+            res->trans_pos[i] = robot_pos->_fPosition[i];
+        }
+        res->success = true;
+        return true;
+    }
+    bool DRHWInterface::fkin_cb(const std::shared_ptr<dsr_msgs2::srv::Fkin::Request> req, std::shared_ptr<dsr_msgs2::srv::Fkin::Response> res)              
+    {
+        res->success = false;
+        std::array<float, NUM_TASK> joint_pos;
+        std::copy(req->pos.cbegin(), req->pos.cend(), joint_pos.begin());
 
-    void DRHWInterface::jog_cb(const std::shared_ptr<dsr_msgs2::srv::Jog::Request> req, std::shared_ptr<dsr_msgs2::srv::Jog::Response> res)              
-    {
-        if(req) res->success = 0;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< fkin_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    joint_pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",joint_pos[0],joint_pos[1],joint_pos[2],joint_pos[3],joint_pos[4],joint_pos[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref       = %d",req->ref);      
+    #endif
+        LPROBOT_POSE task_pos = Drfl.CalFKin(joint_pos.data(), (COORDINATE_SYSTEM)req->ref);
+        for(int i=0; i<NUM_TASK; i++){
+            res->conv_posx[i] = task_pos->_fPosition[i];
+        }
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::jog_multi_cb(const std::shared_ptr<dsr_msgs2::srv::JogMulti::Request> req, std::shared_ptr<dsr_msgs2::srv::JogMulti::Response> res)                      
+    bool DRHWInterface::ikin_cb(const std::shared_ptr<dsr_msgs2::srv::Ikin::Request> req, std::shared_ptr<dsr_msgs2::srv::Ikin::Response> res)              
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+        std::copy(req->pos.cbegin(), req->pos.cend(), task_pos.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< ikin_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    task_pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref       = %d",req->ref);      
+    #endif
+
+        LPROBOT_POSE joint_pos = Drfl.CalIKin(task_pos.data(), req->sol_space, (COORDINATE_SYSTEM)req->ref);
+        for(int i=0; i<NUM_TASK; i++){
+            res->conv_posj[i] = joint_pos->_fPosition[i];
+        }
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::move_pause_cb(const std::shared_ptr<dsr_msgs2::srv::MovePause::Request> req, std::shared_ptr<dsr_msgs2::srv::MovePause::Response> res)                      
+    bool DRHWInterface::set_ref_coord_cb(const std::shared_ptr<dsr_msgs2::srv::SetRefCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRefCoord::Response> res)                  
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_ref_coord_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    coord = %d",req->coord);      
+    #endif
+
+        res->success = Drfl.SetReferenceCoordinate((COORDINATE_SYSTEM)req->coord);
+        return true;
     }
-    void DRHWInterface::move_stop_cb(const std::shared_ptr<dsr_msgs2::srv::MoveStop::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveStop::Response> res)                  
+    bool DRHWInterface::move_home_cb(const std::shared_ptr<dsr_msgs2::srv::MoveHome::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveHome::Response> res)                  
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< move_home_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    target = %d",req->target);      
+    #endif
+
+        if(0 == req->target) 
+            res->success = Drfl.Home(1);
+        else 
+            res->success = Drfl.UserHome(1);
+        return true;
     }
-    void DRHWInterface::move_resume_cb(const std::shared_ptr<dsr_msgs2::srv::MoveResume::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveResume::Response> res)                  
+    bool DRHWInterface::check_motion_cb(const std::shared_ptr<dsr_msgs2::srv::CheckMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckMotion::Response> res)                  
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< check_motion_cb >");
+    #endif
+
+        res->status = Drfl.CheckMotion();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::trans_cb(const std::shared_ptr<dsr_msgs2::srv::Trans::Request> req, std::shared_ptr<dsr_msgs2::srv::Trans::Response> res)                  
+    bool DRHWInterface::change_operation_speed_cb(const std::shared_ptr<dsr_msgs2::srv::ChangeOperationSpeed::Request> req, std::shared_ptr<dsr_msgs2::srv::ChangeOperationSpeed::Response> res)        
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< change_operation_speed_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    speed = %f",(float)req->speed);
+    #endif
+
+        res->success = Drfl.PlayDrlSpeed((float)req->speed);
+        return true;
     }
-    void DRHWInterface::fkin_cb(const std::shared_ptr<dsr_msgs2::srv::Fkin::Request> req, std::shared_ptr<dsr_msgs2::srv::Fkin::Response> res)              
+    bool DRHWInterface::enable_alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::EnableAlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::EnableAlterMotion::Response> res)                 
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, 2> limit;
+        std::array<float, 2> limit_per;
+        std::copy(req->limit_dpos.cbegin(), req->limit_dpos.cend(), limit.begin());
+        std::copy(req->limit_dpos_per.cbegin(), req->limit_dpos_per.cend(), limit_per.begin());
+ 
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< enable_alter_motion_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    n         = %d",req->n);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mode      = %d",req->mode);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref       = %d",req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    limit     = %7.3f,%7.3f",limit[0],limit[1]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    limit_per = %7.3f,%7.3f",limit_per[0],limit_per[1]);
+    #endif
+
+        res->success = Drfl.EnableAlterMotion((int)req->n, (PATH_MODE)req->mode, (COORDINATE_SYSTEM)req->ref, limit.data(), limit_per.data());
+        return true;        
     }
-    void DRHWInterface::ikin_cb(const std::shared_ptr<dsr_msgs2::srv::Ikin::Request> req, std::shared_ptr<dsr_msgs2::srv::Ikin::Response> res)              
+    bool DRHWInterface::alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::AlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::AlterMotion::Response> res)              
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> pos_alter;
+        std::copy(req->pos.cbegin(), req->pos.cend(), pos_alter.begin());
+ 
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< alter_motion_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos_alter = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",pos_alter[0],pos_alter[1],pos_alter[2],pos_alter[3],pos_alter[4],pos_alter[5]);
+    #endif
+
+        res->success = Drfl.AlterMotion(pos_alter.data());       
+        return true;
     }
-    void DRHWInterface::set_ref_coord_cb(const std::shared_ptr<dsr_msgs2::srv::SetRefCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::SetRefCoord::Response> res)                  
+    bool DRHWInterface::disable_alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::DisableAlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::DisableAlterMotion::Response> res)              
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< disable_alter_motion_cb >");
+    #endif
+
+        res->success = Drfl.DisableAlterMotion();
+        return true;
     }
-    void DRHWInterface::move_home_cb(const std::shared_ptr<dsr_msgs2::srv::MoveHome::Request> req, std::shared_ptr<dsr_msgs2::srv::MoveHome::Response> res)                  
+    bool DRHWInterface::set_singularity_handling_cb(const std::shared_ptr<dsr_msgs2::srv::SetSingularityHandling::Request> req, std::shared_ptr<dsr_msgs2::srv::SetSingularityHandling::Response> res)  
     {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::check_motion_cb(const std::shared_ptr<dsr_msgs2::srv::CheckMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckMotion::Response> res)                  
-    {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::change_operation_speed_cb(const std::shared_ptr<dsr_msgs2::srv::ChangeOperationSpeed::Request> req, std::shared_ptr<dsr_msgs2::srv::ChangeOperationSpeed::Response> res)        
-    {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::enable_alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::EnableAlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::EnableAlterMotion::Response> res)                 
-    {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::AlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::AlterMotion::Response> res)              
-    {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::disable_alter_motion_cb(const std::shared_ptr<dsr_msgs2::srv::DisableAlterMotion::Request> req, std::shared_ptr<dsr_msgs2::srv::DisableAlterMotion::Response> res)              
-    {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::set_singularity_handling_cb(const std::shared_ptr<dsr_msgs2::srv::SetSingularityHandling::Request> req, std::shared_ptr<dsr_msgs2::srv::SetSingularityHandling::Response> res)  
-    {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_singularity_handling_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mode = %d",req->mode);
+    #endif
+
+        res->success = Drfl.SetSingularityHandling((SINGULARITY_AVOIDANCE)req->mode);      
+        return true;
     }
 
 
@@ -1645,314 +1805,1159 @@ namespace dsr_control2{
 
     
     //----- AUXILIARY_CONTROL Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::get_control_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetControlMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetControlMode::Response> res)                           
+    bool DRHWInterface::get_control_mode_cb(const std::shared_ptr<dsr_msgs2::srv::GetControlMode::Request> req, std::shared_ptr<dsr_msgs2::srv::GetControlMode::Response> res)                           
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_control_mode_cb >");
+    #endif
+        //NO API , get mon_data      
+        res->control_mode = g_stDrState.nActualMode;
+        res->success = true;       
+        return true;
     }
-    void DRHWInterface::get_control_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetControlSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetControlSpace::Response> res)                          
+    bool DRHWInterface::get_control_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetControlSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetControlSpace::Response> res)                          
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_control_space_cb >");
+    #endif
+        //NO API , get mon_data
+        res->space = g_stDrState.nActualSpace;
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_current_posj_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPosj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPosj::Response> res)                                            
+    bool DRHWInterface::get_current_posj_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPosj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPosj::Response> res)                                            
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_posj_cb >");
+    #endif
+        LPROBOT_POSE robot_pos = Drfl.GetCurrentPose((ROBOT_SPACE)ROBOT_SPACE_JOINT);
+        for(int i = 0; i < NUM_TASK; i++){
+            res->pos[i] = robot_pos->_fPosition[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_current_velj_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentVelj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentVelj::Response> res)                                
+    bool DRHWInterface::get_current_velj_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentVelj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentVelj::Response> res)                                
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_velj_cb >");
+    #endif
+
+        //NO API , get mon_data
+        for(int i=0; i<NUM_TASK; i++){
+            res->joint_speed[i] = g_stDrState.fCurrentVelj[i];
+        }
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_desired_posj_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredPosj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredPosj::Response> res)         
+    bool DRHWInterface::get_desired_posj_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredPosj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredPosj::Response> res)         
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_desired_posj_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i=0; i<NUM_TASK; i++){
+            res->pos[i] = g_stDrState.fTargetPosj[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_desired_velj_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredVelj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredVelj::Response> res)                                   
+    bool DRHWInterface::get_desired_velj_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredVelj::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredVelj::Response> res)                                   
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_desired_velj_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i=0; i<NUM_TASK; i++){
+            res->joint_vel[i] = g_stDrState.fTargetVelj[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_current_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPosx::Response> res)                               
+    bool DRHWInterface::get_current_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentPosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentPosx::Response> res)                               
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std_msgs::msg::Float64MultiArray arr;
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_posx_cb >");
+    #endif
+
+        LPROBOT_TASK_POSE cur_posx = Drfl.CalCurrentTaskPose((COORDINATE_SYSTEM)req->ref);
+        arr.data.clear();
+        for (int i = 0; i < NUM_TASK; i++){
+            arr.data.push_back(cur_posx->_fTargetPos[i]);
+        }
+        arr.data.push_back(cur_posx->_iTargetSol);
+        res->task_pos_info.push_back(arr);
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_current_tool_flange_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentToolFlangePosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentToolFlangePosx::Response> res)                 
+    bool DRHWInterface::get_current_velx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentVelx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentVelx::Response> res)                         
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_velx_cb >");
+    #endif
+   
+        //NO API , get mon_data
+        for(int i=0; i<NUM_TASK; i++){
+            res->vel[i] = g_stDrState.fCurrentVelx[i];
+        }
+        res->success = true;            
+        return true;
     }
-    void DRHWInterface::get_current_velx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentVelx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentVelx::Response> res)                         
+    bool DRHWInterface::get_desired_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredPosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredPosx::Response> res)     
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_desired_posx_cb >");
+    #endif
+        LPROBOT_POSE task_pos = Drfl.CalDesiredTaskPose((COORDINATE_SYSTEM)req->ref);
+        for(int i=0; i<NUM_TASK; i++){
+            res->pos[i] = task_pos->_fPosition[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_desired_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredPosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredPosx::Response> res)     
+    bool DRHWInterface::get_desired_velx_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredVelx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredVelx::Response> res)                             
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_desired_velx_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i=0; i<NUM_TASK; i++){
+            res->vel[i] = g_stDrState.fTargetVelx[i];
+        }
+        res->success = true;                    
+        return true;
     }
-    void DRHWInterface::get_desired_velx_cb(const std::shared_ptr<dsr_msgs2::srv::GetDesiredVelx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDesiredVelx::Response> res)                             
+    bool DRHWInterface::get_current_tool_flange_posx_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentToolFlangePosx::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentToolFlangePosx::Response> res)                 
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_tool_flange_posx_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i=0; i<NUM_TASK; i++){
+            res->pos[i] = g_stDrState.fCurrentToolPosx[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_current_solution_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentSolutionSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentSolutionSpace::Response> res)                    
+    bool DRHWInterface::get_current_solution_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentSolutionSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentSolutionSpace::Response> res)                    
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_solution_space_cb >");
+    #endif
+        res->sol_space = Drfl.GetCurrentSolutionSpace();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_current_rotm_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentRotm::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentRotm::Response> res)                     
+    bool DRHWInterface::get_current_rotm_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentRotm::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentRotm::Response> res)                     
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std_msgs::msg::Float64MultiArray arr;
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_current_rotm_cb >");
+    #endif
+        //NO API , get mon_data
+        for (int i = 0; i < 3; i++){
+            arr.data.clear();
+            for (int j = 0; j < 3; j++){
+                arr.data.push_back(g_stDrState.fRotationMatrix[i][j]);
+            }
+            res->rot_matrix.push_back(arr);
+        }
+        res->success = true;         
+        return true;
     }
-    void DRHWInterface::get_joint_torque_cb(const std::shared_ptr<dsr_msgs2::srv::GetJointTorque::Request> req, std::shared_ptr<dsr_msgs2::srv::GetJointTorque::Response> res)                     
+    bool DRHWInterface::get_joint_torque_cb(const std::shared_ptr<dsr_msgs2::srv::GetJointTorque::Request> req, std::shared_ptr<dsr_msgs2::srv::GetJointTorque::Response> res)                     
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_joint_torque_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i = 0; i < NUM_TASK; i++){
+            res->jts[i] = g_stDrState.fActualJTS[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_external_torque_cb(const std::shared_ptr<dsr_msgs2::srv::GetExternalTorque::Request> req, std::shared_ptr<dsr_msgs2::srv::GetExternalTorque::Response> res)                
+    bool DRHWInterface::get_external_torque_cb(const std::shared_ptr<dsr_msgs2::srv::GetExternalTorque::Request> req, std::shared_ptr<dsr_msgs2::srv::GetExternalTorque::Response> res)                
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_external_torque_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i = 0; i < NUM_TASK; i++){
+            res->ext_torque[i] = g_stDrState.fActualEJT[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_tool_force_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolForce::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolForce::Response> res)                               
+    bool DRHWInterface::get_tool_force_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolForce::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolForce::Response> res)                               
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_tool_force_cb >");
+    #endif
+        //NO API , get mon_data
+        for(int i = 0; i < NUM_TASK; i++){
+            res->tool_force[i] = g_stDrState.fActualETT[i];
+        }
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_solution_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetSolutionSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetSolutionSpace::Response> res)       
-    {
-        if(req) res->success = 0;
+    bool DRHWInterface::get_solution_space_cb(const std::shared_ptr<dsr_msgs2::srv::GetSolutionSpace::Request> req, std::shared_ptr<dsr_msgs2::srv::GetSolutionSpace::Response> res)       
+    {    
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+        std::copy(req->pos.cbegin(), req->pos.cend(), task_pos.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_solution_space_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+    #endif
+        res->sol_space = Drfl.GetSolutionSpace(task_pos.data());
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::get_orientation_error_cb(const std::shared_ptr<dsr_msgs2::srv::GetOrientationError::Request> req, std::shared_ptr<dsr_msgs2::srv::GetOrientationError::Response> res)              
-    {
-        if(req) res->success = 0;
+    bool DRHWInterface::get_orientation_error_cb(const std::shared_ptr<dsr_msgs2::srv::GetOrientationError::Request> req, std::shared_ptr<dsr_msgs2::srv::GetOrientationError::Response> res)              
+    {        
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos1;
+        std::array<float, NUM_TASK> task_pos2;
+
+        std::copy(req->xd.cbegin(), req->xd.cend(), task_pos1.begin());
+        std::copy(req->xc.cbegin(), req->xc.cend(), task_pos2.begin());
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_orientation_error_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    xd = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos1[0],task_pos1[1],task_pos1[2],task_pos1[3],task_pos1[4],task_pos1[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    xc = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos2[0],task_pos2[1],task_pos2[2],task_pos2[3],task_pos2[4],task_pos2[5]);      
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d",req->axis);
+    #endif
+        ///res->ori_error = Drfl.CalOrientationError(task_pos1.data(), task_pos2.data(), (TASK_AXIS)req->axis);     //check 040404
+        res->success = true;
+        return true;
     }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    bool DRHWInterface::get_workpiece_weight_cb(const std::shared_ptr<dsr_msgs2::srv::GetWorkpieceWeight::Request> req, std::shared_ptr<dsr_msgs2::srv::GetWorkpieceWeight::Response> res)          
+    {
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_workpiece_weight_cb >");
+    #endif
+        res->weight = Drfl.MeasurePayload();
+        res->success = true;
+        return true;
+    } 
+    bool DRHWInterface::reset_workpiece_weight_cb(const std::shared_ptr<dsr_msgs2::srv::ResetWorkpieceWeight::Request> req, std::shared_ptr<dsr_msgs2::srv::ResetWorkpieceWeight::Response> res)          
+    {
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< reset_workpiece_weight_cb >");
+    #endif
+        res->success = Drfl.ResetPayload();
+
+        return true;
+    } 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     //----- FORCE/STIFFNESS Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::parallel_axis1_cb(const std::shared_ptr<dsr_msgs2::srv::ParallelAxis1::Request> req, std::shared_ptr<dsr_msgs2::srv::ParallelAxis1::Response> res)  
+    bool DRHWInterface::parallel_axis1_cb(const std::shared_ptr<dsr_msgs2::srv::ParallelAxis1::Request> req, std::shared_ptr<dsr_msgs2::srv::ParallelAxis1::Response> res)  
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos1;
+        std::array<float, NUM_TASK> task_pos2;
+        std::array<float, NUM_TASK> task_pos3;
+ 
+        std::copy(req->x1.cbegin(), req->x1.cend(), task_pos1.begin());
+        std::copy(req->x2.cbegin(), req->x2.cend(), task_pos2.begin());
+        std::copy(req->x3.cbegin(), req->x3.cend(), task_pos3.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< parallel_axis1_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x1 = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos1[0],task_pos1[1],task_pos1[2],task_pos1[3],task_pos1[4],task_pos1[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x2 = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos2[0],task_pos2[1],task_pos2[2],task_pos2[3],task_pos2[4],task_pos2[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x3 = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos3[0],task_pos3[1],task_pos3[2],task_pos3[3],task_pos3[4],task_pos3[5]);
+    #endif
+        res->success = Drfl.ParallelAxis1(task_pos1.data(), task_pos2.data(), task_pos3.data(), (TASK_AXIS)req->axis, (COORDINATE_SYSTEM)req->ref);
+        return true;
     }
-    void DRHWInterface::parallel_axis2_cb(const std::shared_ptr<dsr_msgs2::srv::ParallelAxis2::Request> req, std::shared_ptr<dsr_msgs2::srv::ParallelAxis2::Response> res)  
+    bool DRHWInterface::parallel_axis2_cb(const std::shared_ptr<dsr_msgs2::srv::ParallelAxis2::Request> req, std::shared_ptr<dsr_msgs2::srv::ParallelAxis2::Response> res)  
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, 3> vector;
+ 
+        std::copy(req->vect.cbegin(), req->vect.cend(), vector.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< parallel_axis2_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    vect = %7.3f,%7.3f,%7.3f",vector[0],vector[1],vector[2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d",req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d",req->ref);
+    #endif
+        res->success = Drfl.ParallelAxis2(vector.data(), (TASK_AXIS)req->axis, (COORDINATE_SYSTEM)req->ref);        
+        return true;
     }
-    void DRHWInterface::align_axis1_cb(const std::shared_ptr<dsr_msgs2::srv::AlignAxis1::Request> req, std::shared_ptr<dsr_msgs2::srv::AlignAxis1::Response> res)          
+    bool DRHWInterface::align_axis1_cb(const std::shared_ptr<dsr_msgs2::srv::AlignAxis1::Request> req, std::shared_ptr<dsr_msgs2::srv::AlignAxis1::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos1;
+        std::array<float, NUM_TASK> task_pos2;
+        std::array<float, NUM_TASK> task_pos3;
+        //std::array<float, NUM_TASK> task_pos4;
+        float fSourceVec[3] = {0, };
+
+        std::copy(req->x1.cbegin(), req->x1.cend(), task_pos1.begin());
+        std::copy(req->x2.cbegin(), req->x2.cend(), task_pos2.begin());
+        std::copy(req->x3.cbegin(), req->x3.cend(), task_pos3.begin());
+        //std::copy(req->pos.cbegin(),req->pos.cend(),task_pos4.begin());
+          //req->pos[6] -> fTargetVec[3] : only use [x,y,z]    
+        for(int i=0; i<3; i++)        
+            fSourceVec[i] = req->pos[i];
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< align_axis1_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x1  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos1[0],task_pos1[1],task_pos1[2],task_pos1[3],task_pos1[4],task_pos1[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x2  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos2[0],task_pos2[1],task_pos2[2],task_pos2[3],task_pos2[4],task_pos2[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x3  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos3[0],task_pos3[1],task_pos3[2],task_pos3[3],task_pos3[4],task_pos3[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f",fSourceVec[0],fSourceVec[1],fSourceVec[2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d",req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d",req->ref);
+    #endif
+        res->success = Drfl.AlignAxis1(task_pos1.data(), task_pos2.data(), task_pos3.data(), fSourceVec, (TASK_AXIS)req->axis, (COORDINATE_SYSTEM)req->ref);
+        return true;
     }
-    void DRHWInterface::align_axis2_cb(const std::shared_ptr<dsr_msgs2::srv::AlignAxis2::Request> req, std::shared_ptr<dsr_msgs2::srv::AlignAxis2::Response> res)      
+    bool DRHWInterface::align_axis2_cb(const std::shared_ptr<dsr_msgs2::srv::AlignAxis2::Request> req, std::shared_ptr<dsr_msgs2::srv::AlignAxis2::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+        float fTargetVec[3] = {0, };
+        float fSourceVec[3] = {0, };
+
+        for(int i=0; i<3; i++)
+        {        
+            fTargetVec[i] = req->vect[i];
+            fSourceVec[i] = req->pos[i];     ////req->pos[6] -> fSourceVec[3] : only use [x,y,z]
+        }
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< align_axis2_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    vect = %7.3f,%7.3f,%7.3f",fTargetVec[0],fTargetVec[1],fTargetVec[2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos  = %7.3f,%7.3f,%7.3f",fSourceVec[0],fSourceVec[1],fSourceVec[2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d",req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d",req->ref);
+    #endif
+        res->success = Drfl.AlignAxis2(fTargetVec, fSourceVec, (TASK_AXIS)req->axis, (COORDINATE_SYSTEM)req->ref);
+        return true;
     }
-    void DRHWInterface::is_done_bolt_tightening_cb(const std::shared_ptr<dsr_msgs2::srv::IsDoneBoltTightening::Request> req, std::shared_ptr<dsr_msgs2::srv::IsDoneBoltTightening::Response> res)      
+    bool DRHWInterface::is_done_bolt_tightening_cb(const std::shared_ptr<dsr_msgs2::srv::IsDoneBoltTightening::Request> req, std::shared_ptr<dsr_msgs2::srv::IsDoneBoltTightening::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< is_done_bolt_tightening_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    m       = %f",req->m);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    timeout = %f",req->timeout);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis    = %d",req->axis);
+    #endif
+        res->success = Drfl.WaitForBoltTightening((FORCE_AXIS)req->axis, req->m, req->timeout);
+        return true;
     }
-    void DRHWInterface::release_compliance_ctrl_cb(const std::shared_ptr<dsr_msgs2::srv::ReleaseComplianceCtrl::Request> req, std::shared_ptr<dsr_msgs2::srv::ReleaseComplianceCtrl::Response> res)         
+    bool DRHWInterface::release_compliance_ctrl_cb(const std::shared_ptr<dsr_msgs2::srv::ReleaseComplianceCtrl::Request> req, std::shared_ptr<dsr_msgs2::srv::ReleaseComplianceCtrl::Response> res)         
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< release_compliance_ctrl_cb >");
+    #endif
+        res->success = Drfl.LeaveTaskCompliance();
+        return true;
     }
-    void DRHWInterface::task_compliance_ctrl_cb(const std::shared_ptr<dsr_msgs2::srv::TaskComplianceCtrl::Request> req, std::shared_ptr<dsr_msgs2::srv::TaskComplianceCtrl::Response> res)          
+    bool DRHWInterface::task_compliance_ctrl_cb(const std::shared_ptr<dsr_msgs2::srv::TaskComplianceCtrl::Request> req, std::shared_ptr<dsr_msgs2::srv::TaskComplianceCtrl::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> stiffnesses;
+ 
+        std::copy(req->stx.cbegin(), req->stx.cend(), stiffnesses.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< task_compliance_ctrl_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    stx     = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",stiffnesses[0],stiffnesses[1],stiffnesses[2],stiffnesses[3],stiffnesses[4],stiffnesses[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref     = %d",req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    timeout = %f",req->time);
+    #endif
+        res->success = Drfl.EnterTaskCompliance(stiffnesses.data(), (COORDINATE_SYSTEM)req->ref, req->time);
+        return true;
     }
-    void DRHWInterface::set_stiffnessx_cb(const std::shared_ptr<dsr_msgs2::srv::SetStiffnessx::Request> req, std::shared_ptr<dsr_msgs2::srv::SetStiffnessx::Response> res)          
+    bool DRHWInterface::set_stiffnessx_cb(const std::shared_ptr<dsr_msgs2::srv::SetStiffnessx::Request> req, std::shared_ptr<dsr_msgs2::srv::SetStiffnessx::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> stiffnesses;
+ 
+        std::copy(req->stx.cbegin(), req->stx.cend(), stiffnesses.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_stiffnessx_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    stx     = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",stiffnesses[0],stiffnesses[1],stiffnesses[2],stiffnesses[3],stiffnesses[4],stiffnesses[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref     = %d",req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    timeout = %f",req->time);
+    #endif
+        res->success = Drfl.SetTaskStiffness(stiffnesses.data(), (COORDINATE_SYSTEM)req->ref, req->time);
+        return true;
     }
-    void DRHWInterface::calc_coord_cb(const std::shared_ptr<dsr_msgs2::srv::CalcCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::CalcCoord::Response> res)      
+    bool DRHWInterface::calc_coord_cb(const std::shared_ptr<dsr_msgs2::srv::CalcCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::CalcCoord::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos1;
+        std::array<float, NUM_TASK> task_pos2;
+        std::array<float, NUM_TASK> task_pos3;
+        std::array<float, NUM_TASK> task_pos4;
+ 
+        std::copy(req->x1.cbegin(), req->x1.cend(), task_pos1.begin());
+        std::copy(req->x2.cbegin(), req->x2.cend(), task_pos2.begin());
+        std::copy(req->x3.cbegin(), req->x3.cend(), task_pos3.begin());
+        std::copy(req->x4.cbegin(), req->x4.cend(), task_pos4.begin());
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< calc_coord_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    input_pos_cnt = %d",req->input_pos_cnt); 
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x1  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos1[0],task_pos1[1],task_pos1[2],task_pos1[3],task_pos1[4],task_pos1[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x2  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos2[0],task_pos2[1],task_pos2[2],task_pos2[3],task_pos2[4],task_pos2[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x3  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos3[0],task_pos3[1],task_pos3[2],task_pos3[3],task_pos3[4],task_pos3[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x4  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos4[0],task_pos4[1],task_pos4[2],task_pos4[3],task_pos4[4],task_pos4[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref = %d",req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mod = %d",req->mod);
+    #endif
+        LPROBOT_POSE task_pos = Drfl.CalUserCoordinate(req->input_pos_cnt, req->mod, (COORDINATE_SYSTEM)req->ref, task_pos1.data(), task_pos2.data(), task_pos3.data(), task_pos4.data());
+        for(int i=0; i<NUM_TASK; i++){
+            res->conv_posx[i] = task_pos->_fPosition[i];
+        }
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::set_user_cart_coord1_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord1::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord1::Response> res)          
+    bool DRHWInterface::set_user_cart_coord1_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord1::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord1::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+ 
+        std::copy(req->pos.cbegin(), req->pos.cend(), task_pos.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_user_cart_coord1_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref = %d",req->ref);
+    #endif
+        res->id = Drfl.ConfigUserCoordinate(0, task_pos.data(), (COORDINATE_SYSTEM)req->ref);  
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::set_user_cart_coord2_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord2::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord2::Response> res)              
+    bool DRHWInterface::set_user_cart_coord2_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord2::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord2::Response> res)              
     {
-        if(req) res->success = 0;
+        res->success = false;
+        //std::array<float, NUM_TASK> task_pos1;
+        //std::array<float, NUM_TASK> task_pos2;
+        //std::array<float, NUM_TASK> task_pos3;
+        //std::array<float, NUM_TASK> target_org;
+        float fTargetPos[3][NUM_TASK] = {0, };
+        float fTargetOrg[3] = {0, };
+        
+        //req->x1[6] + req->x2[6] + req->x3[6] -> fTargetPos[3][NUM_TASK] 
+        for(int i=0; i<NUM_TASK; i++)        
+        {
+            fTargetPos[0][i] = req->x1[i];
+            fTargetPos[1][i] = req->x2[i];
+            fTargetPos[2][i] = req->x3[i];
+        }
+        //req->pos[6] -> fTargetOrg[3] : only use [x,y,z]    
+        for(int i=0; i<3; i++)        
+            fTargetOrg[i] = req->pos[i];
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_user_cart_coord2_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x1  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",fTargetPos[0][0],fTargetPos[0][1],fTargetPos[0][2],fTargetPos[0][3],fTargetPos[0][4],fTargetPos[0][5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x2  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",fTargetPos[1][0],fTargetPos[1][1],fTargetPos[1][2],fTargetPos[1][3],fTargetPos[1][4],fTargetPos[1][5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    x3  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",fTargetPos[2][0],fTargetPos[2][1],fTargetPos[2][2],fTargetPos[2][3],fTargetPos[2][4],fTargetPos[2][5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",fTargetOrg[0],fTargetOrg[1],fTargetOrg[2],fTargetOrg[3],fTargetOrg[4],fTargetOrg[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref = %d",req->ref);
+    #endif
+        res->id = Drfl.ConfigUserCoordinateSystem(fTargetPos, fTargetOrg, (COORDINATE_SYSTEM)req->ref);
+        res->success = true;        
+        return true;
     }
-    void DRHWInterface::set_user_cart_coord3_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord3::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord3::Response> res)      
+    bool DRHWInterface::set_user_cart_coord3_cb(const std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord3::Request> req, std::shared_ptr<dsr_msgs2::srv::SetUserCartCoord3::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+        float fTargetVec[2][3] = {0, };
+        float fTargetOrg[3] = {0, };
+
+        //req->u1[3] + req->c1[3] -> fTargetVec[2][3]
+        for(int i=0; i<3; i++)        
+        {
+            fTargetVec[0][i] = req->u1[i];
+            fTargetVec[1][i] = req->v1[i];
+        }
+        //req->pos[6] -> fTargetOrg[3] : only use [x,y,z]    
+        for(int i=0; i<3; i++)        
+            fTargetOrg[i] = req->pos[i];
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_user_cart_coord3_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    u1  = %7.3f,%7.3f,%7.3f",fTargetVec[0][0],fTargetVec[0][1],fTargetVec[0][2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    v1  = %7.3f,%7.3f,%7.3f",fTargetVec[1][0],fTargetVec[1][1],fTargetVec[1][2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    org = %7.3f,%7.3f,%7.3f",fTargetOrg[0],fTargetOrg[1],fTargetOrg[2]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref = %d",req->ref);
+    #endif
+        res->id = Drfl.ConfigUserCoordinateSystemEx(fTargetVec, fTargetOrg, (COORDINATE_SYSTEM)req->ref);
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::overwrite_user_cart_coord_cb(const std::shared_ptr<dsr_msgs2::srv::OverwriteUserCartCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::OverwriteUserCartCoord::Response> res)      
+    bool DRHWInterface::overwrite_user_cart_coord_cb(const std::shared_ptr<dsr_msgs2::srv::OverwriteUserCartCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::OverwriteUserCartCoord::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+ 
+        std::copy(req->pos.cbegin(),req->pos.cend(),task_pos.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< overwrite_user_cart_coord_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    id  = %d",req->id);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref = %d",req->ref);
+    #endif
+        res->id = Drfl.UpdateUserCoordinate(0, req->id, task_pos.data(), (COORDINATE_SYSTEM)req->ref);  //0=AUTO 
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_user_cart_coord_cb(const std::shared_ptr<dsr_msgs2::srv::GetUserCartCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::GetUserCartCoord::Response> res)          
+    bool DRHWInterface::get_user_cart_coord_cb(const std::shared_ptr<dsr_msgs2::srv::GetUserCartCoord::Request> req, std::shared_ptr<dsr_msgs2::srv::GetUserCartCoord::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< get_user_cart_coord_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    id  = %d",req->id);
+    #endif
+        LPUSER_COORDINATE result = Drfl.GetUserCoordinate(req->id);
+        for(int i=0; i<NUM_TASK; i++){
+            res->conv_posx[i] = result->_fTargetPos[i];
+        }
+        res->ref = result->_iTargetRef;
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::set_desired_force_cb(const std::shared_ptr<dsr_msgs2::srv::SetDesiredForce::Request> req, std::shared_ptr<dsr_msgs2::srv::SetDesiredForce::Response> res)          
+    bool DRHWInterface::set_desired_force_cb(const std::shared_ptr<dsr_msgs2::srv::SetDesiredForce::Request> req, std::shared_ptr<dsr_msgs2::srv::SetDesiredForce::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> feedback;
+        std::array<unsigned char, NUM_TASK> direction;
+ 
+        std::copy(req->fd.cbegin(), req->fd.cend(), feedback.begin());
+        std::copy(req->dir.cbegin(),req->dir.cend(), direction.begin());
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< set_desired_force_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    feedback  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",feedback[0],feedback[1],feedback[2],feedback[3],feedback[4],feedback[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    direction = %d,%d,%d,%d,%d,%d",direction[0],direction[1],direction[2],direction[3],direction[4],direction[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref   = %d", req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    time  = %f", req->time); 
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mod   = %d", req->mod);
+    #endif
+        res->success = Drfl.SetDesiredForce(feedback.data(), direction.data(), (COORDINATE_SYSTEM)req->ref, req->time, (FORCE_MODE)req->mod);
+        return true;
     }
-    void DRHWInterface::release_force_cb(const std::shared_ptr<dsr_msgs2::srv::ReleaseForce::Request> req, std::shared_ptr<dsr_msgs2::srv::ReleaseForce::Response> res)      
+    bool DRHWInterface::release_force_cb(const std::shared_ptr<dsr_msgs2::srv::ReleaseForce::Request> req, std::shared_ptr<dsr_msgs2::srv::ReleaseForce::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< release_force_cb >");
+    #endif
+        res->success = Drfl.ResetDesiredForce(req->time);
+        return true;
     }
-    void DRHWInterface::check_position_condition_cb(const std::shared_ptr<dsr_msgs2::srv::CheckPositionCondition::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckPositionCondition::Response> res)          
+    bool DRHWInterface::check_position_condition_cb(const std::shared_ptr<dsr_msgs2::srv::CheckPositionCondition::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckPositionCondition::Response> res)          
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+        std::copy(req->pos.cbegin(), req->pos.cend(), task_pos.begin());
+  
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< check_position_condition_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d", req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    min  = %f", req->min);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    max  = %f", req->max);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d", req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mode = %d", req->mode);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+    #endif
+        if(0==req->mode)  //DR_MV_MOD_ABS
+            res->success = Drfl.WaitForPositionCondition   ((FORCE_AXIS)req->axis, req->min, req->max, (COORDINATE_SYSTEM)req->ref);
+        else            //DR_MV_MOD_REL
+            res->success = Drfl.WaitForPositionConditionRel((FORCE_AXIS)req->axis, req->min, req->max, task_pos.data(), (COORDINATE_SYSTEM)req->ref);
+        return true;
     }
-    void DRHWInterface::check_force_condition_cb(const std::shared_ptr<dsr_msgs2::srv::CheckForceCondition::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckForceCondition::Response> res)      
+    bool DRHWInterface::check_force_condition_cb(const std::shared_ptr<dsr_msgs2::srv::CheckForceCondition::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckForceCondition::Response> res)      
     {
-        if(req) res->success = 0;
+        res->success = false;
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< check_force_condition_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d", req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    min  = %f", req->min);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    max  = %f", req->max);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d", req->ref);
+    #endif
+        res->success = Drfl.WaitForForceCondition((FORCE_AXIS)req->axis, req->min, req->max, (COORDINATE_SYSTEM)req->ref);
+        return true;
     }
-    void DRHWInterface::check_orientation_condition1_cb(const std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition1::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition1::Response> res)             
+    bool DRHWInterface::check_orientation_condition1_cb(const std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition1::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition1::Response> res)             
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos1;
+        std::array<float, NUM_TASK> task_pos2;
+        std::copy(req->min.cbegin(), req->min.cend(), task_pos1.begin());
+        std::copy(req->max.cbegin(), req->max.cend(), task_pos2.begin());
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< check_orientation_condition1_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d", req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    min = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos1[0],task_pos1[1],task_pos1[2],task_pos1[3],task_pos1[4],task_pos1[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    max = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos2[0],task_pos2[1],task_pos2[2],task_pos2[3],task_pos2[4],task_pos2[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d", req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mode = %d", req->mode);
+    #endif
+        res->success = Drfl.WaitForOrientationCondition((FORCE_AXIS)req->axis , task_pos1.data(), task_pos2.data(), (COORDINATE_SYSTEM)req->ref);
+        return true;
     }
-    void DRHWInterface::check_orientation_condition2_cb(const std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition2::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition2::Response> res)            
+    bool DRHWInterface::check_orientation_condition2_cb(const std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition2::Request> req, std::shared_ptr<dsr_msgs2::srv::CheckOrientationCondition2::Response> res)            
     {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+ 
+        std::copy(req->pos.cbegin(), req->pos.cend(), task_pos.begin());
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< check_orientation_condition2_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    axis = %d", req->axis);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    min  = %f", req->min);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    max  = %f", req->max);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref  = %d", req->ref);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    mode = %d", req->mode);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+    #endif
+        res->success = Drfl.WaitForOrientationConditionRel((FORCE_AXIS)req->axis , req->min, req->max, task_pos.data(), (COORDINATE_SYSTEM)req->ref);        
+        return true;
     }
-    void DRHWInterface::coord_transform_cb(const std::shared_ptr<dsr_msgs2::srv::CoordTransform::Request> req, std::shared_ptr<dsr_msgs2::srv::CoordTransform::Response> res)          
+    bool DRHWInterface::coord_transform_cb(const std::shared_ptr<dsr_msgs2::srv::CoordTransform::Request> req, std::shared_ptr<dsr_msgs2::srv::CoordTransform::Response> res)          
     {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::get_workpiece_weight_cb(const std::shared_ptr<dsr_msgs2::srv::GetWorkpieceWeight::Request> req, std::shared_ptr<dsr_msgs2::srv::GetWorkpieceWeight::Response> res)          
-    {
-        if(req) res->success = 0;
-    }
-    void DRHWInterface::reset_workpiece_weight_cb(const std::shared_ptr<dsr_msgs2::srv::ResetWorkpieceWeight::Request> req, std::shared_ptr<dsr_msgs2::srv::ResetWorkpieceWeight::Response> res)          
-    {
-        if(req) res->success = 0;
+        res->success = false;
+        std::array<float, NUM_TASK> task_pos;
+ 
+        std::copy(req->pos_in.cbegin(), req->pos_in.cend(), task_pos.begin());
+
+    #if (_DEBUG_DSR_CTL)
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"< coord_transform_cb >");
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    pos_in  = %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f",task_pos[0],task_pos[1],task_pos[2],task_pos[3],task_pos[4],task_pos[5]);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref_in  = %d", req->ref_in);
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"    ref_out = %d", req->ref_out);
+    #endif
+        LPROBOT_POSE result_pos = Drfl.TransformCoordinateSystem(task_pos.data(), (COORDINATE_SYSTEM)req->ref_in, (COORDINATE_SYSTEM)req->ref_out);
+        for(int i=0; i<NUM_TASK; i++){
+            res->conv_posx[i] = result_pos->_fPosition[i];
+        }
+        res->success = true;
+        return true;
     }
 
     //----- IO Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::set_ctrl_box_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxDigitalOutput::Response> res)    
+    bool DRHWInterface::set_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxDigitalOutput::Response> res)    
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::set_digital_output_cb() called and calling Drfl.SetCtrlBoxDigitalOutput");
+        res->success = false;
+
+        if((req->index < DR_DIO_MIN_INDEX) || (req->index > DR_DIO_MAX_INDEX)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_digital_output(index=%d, value=%d): index(%d) is out of range. (normal range: %d ~ %d)",req->index ,req->value ,req->index, DR_DIO_MIN_INDEX, DR_DIO_MAX_INDEX);
+        }       
+        else if((req->value < 0) || (req->value > 1)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_digital_output(index=%d, value=%d): value(%d) is out of range. [normal range: 0 or 1]",req->index ,req->value ,req->value);
+        }       
+        else{
+            req->index -=1;
+            res->success = Drfl.SetCtrlBoxDigitalOutput((GPIO_CTRLBOX_DIGITAL_INDEX)req->index, req->value);
+        }
+
+        return true;
     }
-    void DRHWInterface::get_ctrl_box_digital_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalInput::Response> res)   
+    bool DRHWInterface::get_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalOutput::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_digital_output_cb() called and calling Drfl.GetCtrlBoxDigitalOutput");
+        res->success = false;
+
+        if((req->index < DR_DIO_MIN_INDEX) || (req->index > DR_DIO_MAX_INDEX)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_digital_output(index=%d): index(%d) is out of range. (normal range: %d ~ %d)",req->index ,req->index, DR_DIO_MIN_INDEX, DR_DIO_MAX_INDEX);
+        }       
+        else{
+            req->index -=1;
+            res->value = Drfl.GetCtrlBoxDigitalOutput((GPIO_CTRLBOX_DIGITAL_INDEX)req->index);
+            res->success = true;
+        }
+
+        return true;
     }
-    void DRHWInterface::set_tool_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetToolDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetToolDigitalOutput::Response> res)   
+    bool DRHWInterface::get_digital_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalInput::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_digital_input_cb() called and calling Drfl.GetCtrlBoxDigitalInput");
+        res->success = false;
+
+        if((req->index < DR_DIO_MIN_INDEX) || (req->index > DR_DIO_MAX_INDEX)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_digital_input(index=%d): index(%d) is out of range. [normal range: %d ~ %d]",req->index ,req->index, DR_DIO_MIN_INDEX, DR_DIO_MAX_INDEX);
+        }       
+        else{
+            req->index -=1;
+            res->value = Drfl.GetCtrlBoxDigitalInput((GPIO_CTRLBOX_DIGITAL_INDEX)req->index);
+            res->success = true;
+        }
+
+        return true;
     }
-    void DRHWInterface::get_tool_digital_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolDigitalInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolDigitalInput::Response> res)   
+    bool DRHWInterface::set_tool_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetToolDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetToolDigitalOutput::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::set_tool_digital_output_cb() called and calling Drfl.SetToolDigitalOutput");
+        res->success = false;
+
+        if((req->index < DR_TDIO_MIN_INDEX) || (req->index > DR_TDIO_MAX_INDEX)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_tool_digital_output(index=%d, value=%d): index(%d) is out of range. [normal range: %d ~ %d]",req->index ,req->value ,req->index, DR_TDIO_MIN_INDEX, DR_TDIO_MAX_INDEX);
+        }       
+        else if((req->value < 0) || (req->value > 1)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_tool_digital_output(index=%d, value=%d): value(%d) is out of range. [normal range: 0 or 1]",req->index ,req->value ,req->value);
+        }
+        else{       
+            req->index -=1;
+            res->success = Drfl.SetToolDigitalOutput((GPIO_TOOL_DIGITAL_INDEX)req->index, req->value);
+        }
+
+        return true;
     }
-    void DRHWInterface::set_ctrl_box_analog_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutput::Response> res)   
+    bool DRHWInterface::get_tool_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolDigitalOutput::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_tool_digital_output_cb() called and calling Drfl.GetToolDigitalOutput");
+        res->success = false;
+
+        if((req->index < DR_TDIO_MIN_INDEX) || (req->index > DR_TDIO_MAX_INDEX)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_tool_digital_output(index=%d): index(%d) is out of range. [normal range: %d ~ %d]",req->index ,req->index, DR_TDIO_MIN_INDEX, DR_TDIO_MAX_INDEX);
+        }       
+        else{       
+            req->index -=1;
+            res->value = Drfl.GetToolDigitalOutput((GPIO_TOOL_DIGITAL_INDEX)req->index);
+            res->success = true;
+        }
+
+        return true;
     }
-    void DRHWInterface::get_ctrl_box_analog_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxAnalogInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxAnalogInput::Response> res)   
+    bool DRHWInterface::get_tool_digital_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolDigitalInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolDigitalInput::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_tool_digital_input_cb() called and calling Drfl.GetToolDigitalInput");
+        res->success = false;
+        if((req->index < DR_TDIO_MIN_INDEX) || (req->index > DR_TDIO_MAX_INDEX)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_tool_digital_input(index=%d): index(%d) is out of range. [normal range: %d ~ %d]",req->index ,req->index, DR_TDIO_MIN_INDEX, DR_TDIO_MAX_INDEX);
+        }       
+        else{
+            req->index -=1;
+            res->value = Drfl.GetToolDigitalInput((GPIO_TOOL_DIGITAL_INDEX)req->index);
+            res->success = true;
+        }
+
+        return true;
     }
-    void DRHWInterface::set_ctrl_box_analog_output_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType::Response> res)   
-    {
-        if(req) res->success = 0;
+    bool DRHWInterface::set_analog_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutput::Response> res)   
+    {        
+        //ROS_INFO("DRHWInterface::set_analog_output_cb() called and calling Drfl.SetCtrlBoxAnalogOutput");
+        res->success = false;
+        bool bIsError = 0;   
+
+        if((req->channel < 1) || (req->channel > 2)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): channel(%d) is out of range. [normal range: 1 or 2]",req->channel ,req->value, req->channel);
+            bIsError = 1;
+        }       
+        else
+        {
+            if(req->channel == 1){                
+                if(g_nAnalogOutputModeCh1==DR_ANALOG_CURRENT){
+                    if((req->value < 4.0) || (req->value > 20.0)){
+                        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): value(%f) is out of range. [normal range: 4.0 ~ 20.0]",req->channel ,req->value ,req->value);
+                        bIsError = 1;
+                    }
+                }
+                else if(g_nAnalogOutputModeCh1==DR_ANALOG_VOLTAGE){
+                    if((req->value < 0.0) || (req->value > 10.0)){
+                        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): value(%f) is out of range. [normal range: 0.0 ~ 10.0]",req->channel ,req->value ,req->value);
+                        bIsError = 1;
+                    }
+                }         
+                else{
+                    RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): Analog output mode(ch%d) is not set",req->channel ,req->value, req->channel);
+                    bIsError = 1;
+                }    
+            }
+            if(req->channel == 2){                
+                if(g_nAnalogOutputModeCh2==DR_ANALOG_CURRENT){
+                    if((req->value < 4.0) || (req->value > 20.0)){
+                        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): value(%f) is out of range. [normal range: 4.0 ~ 20.0]",req->channel ,req->value ,req->value);
+                        bIsError = 1;
+                    }
+                }
+                else if(g_nAnalogOutputModeCh2==DR_ANALOG_VOLTAGE){
+                    if((req->value < 0.0) || (req->value > 10.0)){
+                        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): value(%f) is out of range. [normal range: 0.0 ~ 10.0]",req->channel ,req->value ,req->value);
+                        bIsError = 1;
+                    }
+                }         
+                else{
+                    RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output(channel=%d, value=%f): Analog output mode(ch%d) is not set",req->channel ,req->value, req->channel);
+                    bIsError = 1;
+                }    
+            }
+        }
+        if(!bIsError)
+        {
+            req->channel -=1;
+            res->success = Drfl.SetCtrlBoxAnalogOutput((GPIO_CTRLBOX_ANALOG_INDEX)req->channel, req->value);
+        }
+
+        return true;
     }
-    void DRHWInterface::set_ctrl_box_analog_input_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogInputType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogInputType::Response> res)       
+    bool DRHWInterface::get_analog_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxAnalogInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxAnalogInput::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_analog_input_cb() called and calling Drfl.GetCtrlBoxAnalogInput");
+        res->success = false;
+        bool bIsError = 0;   
+
+        if((req->channel < 1) || (req->channel > 2)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_analog_input(channel=%d): channel(%d) is out of range. [normal range: 1 or 2]",req->channel ,req->channel);
+            bIsError = 1;
+        }       
+        else{
+            if(req->channel == 1){
+                if(g_nAnalogOutputModeCh1 == -1){
+                    RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_analog_input(channel=%d): Analog output mode(ch%d) is not set",req->channel ,req->channel);
+                    bIsError = 1;
+                }                                    
+            }
+            if(req->channel == 2){
+                if(g_nAnalogOutputModeCh2 == -1){
+                    RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"get_analog_input(channel=%d): Analog output mode(ch%d) is not set",req->channel ,req->channel);
+                    bIsError = 1;
+                }                                    
+            }
+        }
+
+        if(!bIsError){
+            req->channel -=1;
+            res->value = Drfl.GetCtrlBoxAnalogInput((GPIO_CTRLBOX_ANALOG_INDEX)req->channel);
+            res->success = true;
+        }
+
+        return true;
     }
-    void DRHWInterface::get_ctrl_box_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCtrlBoxDigitalOutput::Response> res)   
+    bool DRHWInterface::set_analog_output_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogOutputType::Response> res)   
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::set_analog_output_type_cb() called and calling Drfl.SetCtrlBoxAnalogOutputType");
+        res->success = false;
+
+        if((req->channel < 1) || (req->channel > 2)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output_type(channel=%d, mode=%d): channel(%d) is out of range. [normal range: 1 or 2]",req->channel ,req->mode, req->channel);
+        }       
+        else if((req->mode < 0) || (req->mode > 1)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_output_type(channel=%d, mode=%d): mode(%d) is out of range. [normal range: 0 or 1]",req->channel ,req->mode, req->mode);
+        }       
+        else{
+            if(req->channel == 1) g_nAnalogOutputModeCh1 = req->mode;    
+            if(req->channel == 2) g_nAnalogOutputModeCh2 = req->mode;    
+                    
+            req->channel -=1;
+            res->success = Drfl.SetCtrlBoxAnalogOutputType((GPIO_CTRLBOX_ANALOG_INDEX)req->channel, (GPIO_ANALOG_TYPE)req->mode);
+        }
+
+        return true;
     }
-    void DRHWInterface::get_tool_digital_output_cb(const std::shared_ptr<dsr_msgs2::srv::GetToolDigitalOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetToolDigitalOutput::Response> res)   
+    bool DRHWInterface::set_analog_input_type_cb(const std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogInputType::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCtrlBoxAnalogInputType::Response> res)       
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::set_analog_input_type_cb() called and calling Drfl.SetCtrlBoxAnalogInputType");
+        res->success = false;
+
+        if((req->channel < 1) || (req->channel > 2)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_input_type(channel=%d, mode=%d): channel(%d) is out of range. [normal range: 1 or 2]",req->channel ,req->mode, req->channel);
+        }       
+        else if((req->mode < 0) || (req->mode > 1)){
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"set_analog_input_type(channel=%d, mode=%d): mode(%d) is out of range. [normal range: 0 or 1]",req->channel ,req->mode, req->mode);
+        }       
+        else{
+            if(req->channel == 1) g_nAnalogOutputModeCh1 = req->mode;    
+            if(req->channel == 2) g_nAnalogOutputModeCh2 = req->mode;    
+
+            req->channel -=1;
+            res->success = Drfl.SetCtrlBoxAnalogInputType((GPIO_CTRLBOX_ANALOG_INDEX)req->channel, (GPIO_ANALOG_TYPE)req->mode);
+        }
+
+        return true;
     }
 
     //----- MODBUS Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::set_modbus_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetModbusOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetModbusOutput::Response> res)    
+    bool DRHWInterface::set_modbus_output_cb(const std::shared_ptr<dsr_msgs2::srv::SetModbusOutput::Request> req, std::shared_ptr<dsr_msgs2::srv::SetModbusOutput::Response> res)    
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::set_modbus_output_cb() called and calling Drfl.SetModbusOutput");
+        res->success = false;
+        ///check 040404 블럭됨 res->success = Drfl.SetModbusValue(req->name, (unsigned short)req->value);
+        return true;
     }
-    void DRHWInterface::get_modbus_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetModbusInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetModbusInput::Response> res)    
+    bool DRHWInterface::get_modbus_input_cb(const std::shared_ptr<dsr_msgs2::srv::GetModbusInput::Request> req, std::shared_ptr<dsr_msgs2::srv::GetModbusInput::Response> res)    
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::get_modbus_input_cb() called and calling Drfl.GetModbusInput");
+        ///check 040404 블럭됨 res->value = Drfl.GetModbusValue(req->name);
+        return true;
     }
-    void DRHWInterface::config_create_modbus_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateModbus::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateModbus::Response> res)
+    bool DRHWInterface::config_create_modbus_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateModbus::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateModbus::Response> res)
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::config_create_modbus_cb() called and calling Drfl.ConfigCreateModbus");
+        res->success = false;
+        ///check 040404 애뮬죽음 res->success = Drfl.ConfigCreateModbus(req->name, req->ip, (unsigned short)req->port, (MODBUS_REGISTER_TYPE)req->reg_type, (unsigned short)req->index, (unsigned short)req->value, (int)req->slave_id);
+        return true;
     }
-    void DRHWInterface::config_delete_modbus_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteModbus::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteModbus::Response> res)
+    bool DRHWInterface::config_delete_modbus_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteModbus::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteModbus::Response> res)
     {
-        if(req) res->success = 0;
+        RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"DRHWInterface::config_delete_modbus_cb() called and calling Drfl.ConfigDeleteModbus");
+        res->success = false;
+        ///check 040404 블럭됨 res->success = Drfl.ConfigDeleteModbus(req->name);
+        return true;
     }
-
 
     //----- DRL Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::drl_pause_cb(const std::shared_ptr<dsr_msgs2::srv::DrlPause::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlPause::Response> res)                         
+    bool DRHWInterface::drl_pause_cb(const std::shared_ptr<dsr_msgs2::srv::DrlPause::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlPause::Response> res)                         
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::drl_pause_cb() called and calling Drfl.DrlPause");
+        res->success = false;
+
+        if(g_bIsEmulatorMode)
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"The drl service cannot be used in emulator mode (available in real mode).");
+        else 
+            res->success = Drfl.PlayDrlPause();
+
+        return true;
     }
-    void DRHWInterface::drl_start_cb(const std::shared_ptr<dsr_msgs2::srv::DrlStart::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlStart::Response> res)    
+    bool DRHWInterface::drl_start_cb(const std::shared_ptr<dsr_msgs2::srv::DrlStart::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlStart::Response> res)    
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::drl_start_cb() called and calling Drfl.DrlStart");
+        res->success = false;
+
+        if(g_bIsEmulatorMode)
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"The drl service cannot be used in emulator mode (available in real mode).");
+        else 
+            res->success = Drfl.PlayDrlStart((ROBOT_SYSTEM)req->robot_system, req->code);
+
+        return true;
     }
-    void DRHWInterface::drl_stop_cb(const std::shared_ptr<dsr_msgs2::srv::DrlStop::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlStop::Response> res)    
+    bool DRHWInterface::drl_stop_cb(const std::shared_ptr<dsr_msgs2::srv::DrlStop::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlStop::Response> res)    
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::drl_stop_cb() called and calling Drfl.DrlStop");
+        res->success = false;
+
+        if(g_bIsEmulatorMode)
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"The drl service cannot be used in emulator mode (available in real mode).");
+        else 
+            res->success = Drfl.PlayDrlStop((STOP_TYPE)req->stop_mode);
+
+        return true;
     }
-    void DRHWInterface::drl_resume_cb(const std::shared_ptr<dsr_msgs2::srv::DrlResume::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlResume::Response> res)        
+    bool DRHWInterface::drl_resume_cb(const std::shared_ptr<dsr_msgs2::srv::DrlResume::Request> req, std::shared_ptr<dsr_msgs2::srv::DrlResume::Response> res)        
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::drl_resume_cb() called and calling Drfl.DrlResume");
+        res->success = false;
+
+        if(g_bIsEmulatorMode)
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"The drl service cannot be used in emulator mode (available in real mode).");
+        else 
+            res->success = Drfl.PlayDrlResume();
+
+        return true;
     }
-    void DRHWInterface::get_drl_state_cb(const std::shared_ptr<dsr_msgs2::srv::GetDrlState::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDrlState::Response> res)       
+    bool DRHWInterface::get_drl_state_cb(const std::shared_ptr<dsr_msgs2::srv::GetDrlState::Request> req, std::shared_ptr<dsr_msgs2::srv::GetDrlState::Response> res)       
     {
-        if(req) res->success = 0;
+        res->success = false;
+
+        if(g_bIsEmulatorMode)
+            RCLCPP_INFO(rclcpp::get_logger("dsr_hw_interface2"),"The drl service cannot be used in emulator mode (available in real mode).");
+        else{ 
+            res->drl_state = Drfl.GetProgramState();
+            res->success = true;
+        }    
+
+        return true;
     }
 
-    //----- TCP Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::config_create_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateTcp::Response> res)    
+
+    //----- TCP Service Call-back functions -------------------------------------------------------------
+    bool DRHWInterface::set_current_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::SetCurrentTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCurrentTcp::Response> res)       
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::set_current_tcp_cb() called and calling Drfl.SetCurrentTCP");
+        res->success = false;
+        res->success = Drfl.SetCurrentTCP(req->name);
+        return true;
     }
-    void DRHWInterface::config_delete_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTcp::Response> res)  
+    bool DRHWInterface::get_current_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentTcp::Response> res)       
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_current_tcp_cb() called and calling Drfl.GetCurrentTCP");
+        res->success = false;
+        res->info = Drfl.GetCurrentTCP();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_current_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentTcp::Response> res)       
+    bool DRHWInterface::config_create_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateTcp::Response> res)    
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::config_create_tcp_cb() called and calling Drfl.ConfigCreateTCP");
+        res->success = false;
+        std::array<float, 6> target_pos;
+        std::copy(req->pos.cbegin(), req->pos.cend(), target_pos.begin());
+        res->success = Drfl.ConfigCreateTCP(req->name, target_pos.data());
+        return true;
     }
-    void DRHWInterface::set_current_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::SetCurrentTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCurrentTcp::Response> res)       
+    bool DRHWInterface::config_delete_tcp_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTcp::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTcp::Response> res)  
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::config_delete_tcp_cb() called and calling Drfl.ConfigDeleteTCP");
+        res->success = false;
+        res->success = Drfl.ConfigDeleteTCP(req->name);
+        return true;
     }
 
-     //----- TOOL Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::config_create_tool_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateTool::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateTool::Response> res) 
+    //----- TOOL Service Call-back functions ------------------------------------------------------------
+    bool DRHWInterface::set_current_tool_cb(const std::shared_ptr<dsr_msgs2::srv::SetCurrentTool::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCurrentTool::Response> res)     
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::set_current_tool_cb() called and calling Drfl.SetCurrentTool");
+        res->success = false;
+        res->success = Drfl.SetCurrentTool(req->name);
+        return true;
     }
-    void DRHWInterface::config_delete_tool_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTool::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTool::Response> res)    
+    bool DRHWInterface::get_current_tool_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentTool::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentTool::Response> res)     
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::get_current_tool_cb() called and calling Drfl.GetCurrentTool %s", Drfl.GetCurrentTool().c_str());
+        res->success = false;
+        res->info = Drfl.GetCurrentTool();
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::get_current_tool_cb(const std::shared_ptr<dsr_msgs2::srv::GetCurrentTool::Request> req, std::shared_ptr<dsr_msgs2::srv::GetCurrentTool::Response> res)     
+    bool DRHWInterface::config_create_tool_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigCreateTool::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigCreateTool::Response> res) 
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::config_create_tool_cb() called and calling Drfl.ConfigCreateTool");
+        res->success = false;
+        std::array<float, 3> target_cog;
+        std::array<float, 6> target_inertia;
+        std::copy(req->cog.cbegin(), req->cog.cend(), target_cog.begin());
+        std::copy(req->inertia.cbegin(), req->inertia.cend(), target_inertia.begin());
+        res->success = Drfl.ConfigCreateTool(req->name, req->weight, target_cog.data(), target_inertia.data());
+        return true;
     }
-    void DRHWInterface::set_current_tool_cb(const std::shared_ptr<dsr_msgs2::srv::SetCurrentTool::Request> req, std::shared_ptr<dsr_msgs2::srv::SetCurrentTool::Response> res)     
+    bool DRHWInterface::config_delete_tool_cb(const std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTool::Request> req, std::shared_ptr<dsr_msgs2::srv::ConfigDeleteTool::Response> res)    
     {
-        if(req) res->success = 0;
+        //ROS_INFO("DRHWInterface::config_delete_tool_cb() called and calling Drfl.ConfigDeleteTool");
+        res->success = false;
+        res->success = Drfl.ConfigDeleteTool(req->name);
+        return true;
     }
-    void DRHWInterface::set_tool_shape_cb(const std::shared_ptr<dsr_msgs2::srv::SetToolShape::Request> req, std::shared_ptr<dsr_msgs2::srv::SetToolShape::Response> res) 
+    bool DRHWInterface::set_tool_shape_cb(const std::shared_ptr<dsr_msgs2::srv::SetToolShape::Request> req, std::shared_ptr<dsr_msgs2::srv::SetToolShape::Response> res) 
     {
-        if(req) res->success = 0;
+        res->success = false;
+        res->success = Drfl.SetCurrentToolShape(req->name);
+        return true;
     }
+
 
     //----- GRIPPER Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::robotiq2_f_open_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FOpen::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FOpen::Response> res) 
+    bool DRHWInterface::robotiq_2f_move_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FMove::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FMove::Response> res)
     {
-        if(req) res->success = 0;
+        res->success = false;
+        //ROS_INFO("DRHWInterface::gripper_move_cb() called and calling Nothing");
+        /*
+        if(mode == "robotiq_2f"){
+            //Serial Communication
+            ser.Activation();
+            ros::Duration(0.1).sleep();
+            ser.Close();
+            ros::Duration(0.1).sleep();
+            ser.Open();
+        }
+        */
+        float goal_pos = req->width;
+        
+        while(abs(goal_pos - g_joints[6].pos) > 0.01){
+            if(goal_pos > g_joints[6].pos){    
+                g_joints[6].pos = g_joints[6].pos + 0.01;
+            }
+            else if(g_joints[6].pos > goal_pos){
+                g_joints[6].pos = g_joints[6].pos - 0.01;
+            }
+            //ROS2 ros::Duration(0.01).sleep();
+            rclcpp::Duration(0.01).seconds();        //check 040404
+            
+        }
+        res->success = true;
+        return true;
     }
-    void DRHWInterface::robotiq2_f_close_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FClose::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FClose::Response> res)
+    bool DRHWInterface::robotiq_2f_open_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FOpen::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FOpen::Response> res) 
     {
-        if(req) res->success = 0;
+        res->success = false;
+        float goal_pos = 0.8;
+        while(abs(goal_pos - g_joints[6].pos) > 0.01){
+            if(goal_pos > g_joints[6].pos){    
+                g_joints[6].pos = g_joints[6].pos + 0.01;
+            }
+            else if(g_joints[6].pos > goal_pos){
+                g_joints[6].pos = g_joints[6].pos - 0.01;
+            }
+            //ROS2 ros::Duration(0.01).sleep();
+            rclcpp::Duration(0.01).seconds();        //check 040404
+        }
+        res->success = true;
+        return true;      
     }
-    void DRHWInterface::robotiq2_f_move_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FMove::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FMove::Response> res)
+    bool DRHWInterface::robotiq_2f_close_cb(const std::shared_ptr<dsr_msgs2::srv::Robotiq2FClose::Request> req, std::shared_ptr<dsr_msgs2::srv::Robotiq2FClose::Response> res)
     {
-        if(req) res->success = 0;
+        res->success = false;
+        float goal_pos = 0.0;
+
+        while(abs(goal_pos - g_joints[6].pos) > 0.01){
+            if(goal_pos > g_joints[6].pos){    
+                g_joints[6].pos = g_joints[6].pos + 0.01;
+            }
+            else if(g_joints[6].pos > goal_pos){
+                g_joints[6].pos = g_joints[6].pos - 0.01;
+            }
+            //ROS2 ros::Duration(0.01).sleep();
+            rclcpp::Duration(0.01).seconds();        //check 040404
+        }
+        res->success = true;
+        return true;
     }
 
     //----- SERIAL Service Call-back functions ------------------------------------------------------------
-    void DRHWInterface::serial_send_data_cb(const std::shared_ptr<dsr_msgs2::srv::SerialSendData::Request> req, std::shared_ptr<dsr_msgs2::srv::SerialSendData::Response> res)
+    bool DRHWInterface::serial_send_data_cb(const std::shared_ptr<dsr_msgs2::srv::SerialSendData::Request> req, std::shared_ptr<dsr_msgs2::srv::SerialSendData::Response> res)
     {
-        if(req) res->success = 0;
+        //check 040404  
+        res->success = false;
+        std_msgs::msg::String send_data;
+        send_data.data = req->data;
+//???        m_PubSerialWrite->publish(send_data);  //check 040404
+        res->success = true;
+         return true;
     }
 
 }

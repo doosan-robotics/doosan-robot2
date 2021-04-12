@@ -125,9 +125,13 @@ def main(args=None):
     while rclpy.ok():    
         res = set_robot_mode(1)
         print("res= {0}".format(res))    
+
+        # move joint   
         movej(p1, vel=100.0, acc=100.0)
         movej(p2, vel=100.0, acc=100.0)
         time.sleep(1)
+
+        # move line    
         movel(x1, vel=[100.0, 100], acc=[100.0, 100])
         movel(x2, vel=[100.0, 100], acc=[100.0, 100])
         time.sleep(1)

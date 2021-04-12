@@ -120,11 +120,11 @@ def main(args=None):
         robot.movec(c1, c2, velx, accx)
         print("------------> movec OK")    
 
-        # move spilne joint    
+        # move spline joint    
         robot.movesj(qlist, vel=100, acc=100)
         print("------------> movesj OK")    
 
-        # move spilne task    
+        # move spline task    
         robot.movesx(xlist, vel=100, acc=100)
         print("------------> movesx OK")    
 

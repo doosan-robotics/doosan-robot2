@@ -24,7 +24,6 @@
     $ cd ros2_control && git reset --hard 3dc62e28e3bc8cf636275825526c11d13b554bb6 && cd ..
     $ cd ros2_controllers && git reset --hard 83c494f460f1c8675f4fdd6fb8707b87e81cb197 && cd ..
     $ git clone -b ros2 --single-branch https://github.com/ros-planning/moveit_msgs
-    $ sudo apt-get install ros-foxy-gazebo-ros-pkgs
     $ cd ~/ros2_ws
     $ rosdep update
     $ rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y

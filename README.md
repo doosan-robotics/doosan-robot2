@@ -25,6 +25,7 @@
     $ cd ros2_controllers && git reset --hard 83c494f460f1c8675f4fdd6fb8707b87e81cb197 && cd ..
     $ cd gazebo_ros2_control && git reset --hard 3dfe04d412d5be4540752e9c1165ccf25d7c51fb && cd ..
     $ git clone -b ros2 --single-branch https://github.com/ros-planning/moveit_msgs
+    $ sudo apt-get install libpoco-dev
     $ cd ~/ros2_ws
     $ rosdep update
     $ rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y

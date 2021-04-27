@@ -20,7 +20,6 @@
 # *build* 
 ##### *Doosan Robot ROS2 Package is implemented at ROS2-Foxy.*
     ### Prerequisite installation elements before package installation
-    ### If there is no poco library, normal connection is not possible.
     $ sudo apt-get install libpoco-dev
     
     ### We assume that you have installed the ros-foxy-desktop package using the apt-get command.

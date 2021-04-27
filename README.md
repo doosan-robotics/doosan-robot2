@@ -10,6 +10,11 @@
     
     ※ Currently, ROS2 related packages are being updated rapidly. 
        Doosan packages will also be updated from time to time and features will be upgraded.
+       
+# _*article*_
+<img src="https://user-images.githubusercontent.com/47092672/116173431-8a50cd80-a747-11eb-839c-b9f374d9a774.jpeg" width="80%">
+[Doosan  Robotics Unveils Industry's First ROS Package that Supports ROS 2 Foxy Fitzroy](https://apnews.com/press-release/pr-newswire/technology-business-south-korea-materials-industry-robotics-511fcf63df0d36340748142a30e88319)
+
 
 # *build* 
 ##### *Doosan Robot ROS2 Package is implemented at ROS2-Foxy.*

@@ -212,7 +212,7 @@
 
 #include <control_msgs/action/follow_joint_trajectory.hpp>  //ROS2 ???
 
-#include "../../../common2/include/DRFL.h"
+#include "../../../common2/include/DRFLEx.h"
 //TODO #include "../../../common2/include/dsr_serial.h"
 
 #define _DEBUG_DSR_CTL      0

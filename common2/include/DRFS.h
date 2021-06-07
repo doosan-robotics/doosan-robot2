@@ -403,6 +403,14 @@ typedef struct _MESSAGE_INPUT
 
 typedef MESSAGE_INPUT MONITORING_INPUT;
 
+typedef struct _CONTROL_BRAKE
+{
+    /* joint: 0~5 , all joint: 6 */
+    unsigned char               _iTargetAxs;
+    /*  on: 1 off: 0 */
+    unsigned char               _bValue;
+} CONTROL_BRAKE, *LPCONTROL_BRAKE;
+
 typedef struct _MOVE_POSB 
 {
     /*  q               */
@@ -421,6 +429,18 @@ typedef struct _ROBOT_POSE
 
 } ROBOT_POSE, *LPROBOT_POSE;
 
+typedef struct _ROBOT_VEL
+{
+    /* current velocity */
+    float                       _fVelocity[NUM_JOINT];
+} ROBOT_VEL, *LPROBOT_VEL;
+
+typedef struct _ROBOT_FORCE
+{
+    /* current force */
+    float                       _fForce[NUM_JOINT];
+} ROBOT_FORCE, *LPROBOT_FORCE;
+
 typedef struct _ROBOT_TASK_POSE
 {
     /* target pose */
@@ -437,5 +457,83 @@ typedef struct _USER_COORDINATE
     float _fTargetPos[NUM_TASK];
 } USER_COORDINATE, *LPUSER_COORDINATE;
 
+typedef struct _MEASURE_TOOL_RESPONSE
+{
+    /* mass(kg) */
+    float                       _fWeight;
+    /* center of mass */
+    float                       _fXYZ[3];
+    
+} MEASURE_TOOL_RESPONSE, *LPMEASURE_TOOL_RESPONSE;
+
+typedef struct _CONFIG_TCP
+{
+    /* target pose */
+    float                       _fTargetPos[NUM_JOINT];
+
+} CONFIG_TCP, *LPCONFIG_TCP;
+
+typedef struct _CONFIG_TOOL
+{
+    /* mass(kg) */
+    float                       _fWeight;
+    /* center of mass */
+    float                       _fXYZ[3];
+    /* inertia */
+    float                       _fInertia[NUMBER_OF_JOINT];    
+
+} CONFIG_TOOL, *LPCONFIG_TOOL;
+
+typedef struct _MEASURE_TCP_RESPONSE
+{
+    /* mesure pose  */
+    CONFIG_TCP                  _tTCP;
+    /* mesure error */
+    float                       _fError;
+
+} MEASURE_TCP_RESPONSE, *LPMEASURE_TCP_RESPONSE;
+
+typedef struct _FLANGE_SERIAL_DATA
+{
+    unsigned char              _iCommand;       // 0 : OPEN, 1: CLOSE
+                                                // 2 : SEND, 3: RECV
+    union {
+        struct {
+            /* Baudrate */
+            unsigned char               _szBaudrate[7]; // "0115200"(ASCII)
+            /* Data Length */
+            unsigned char               _szDataLength;  // 0: 1bit, 7: 8bit
+            /* Parity */
+            unsigned char               _szParity;      // 0x00 : Non-parity, 0x01 : Odd, 0x02 : Even
+            /* Stop Bit */
+            unsigned char               _szStopBit;     // 0x01 : One stop bit, 0x02 : Two Stop bit
+
+        } _tConfig;
+
+        //unsigned char                   _szConfigData[10];
+
+        struct {
+            unsigned short             _iLength;
+
+            unsigned char              _szValue[MAX_SYMBOL_SIZE];
+
+        } _tValue;
+    } _tData;
+} FLANGE_SERIAL_DATA, *LPFLANGE_SERIAL_DATA;
+
+typedef struct _FLANGE_SER_RXD_INFO
+{
+    /* size of serial data */
+    short                               _iSize;      //max 256bytes
+    /* raw serial data */
+    unsigned char                       _cRxd[256];
+
+} FLANGE_SER_RXD_INFO, *LPFLANGE_SER_RXD_INFO;
+
+typedef struct _READ_FLANGE_SERIAL
+{
+    // check ready to read
+    unsigned char               _bRecvFlag;    // 0: non-receive, 1: received
+} READ_FLANGE_SERIAL, *LPREAD_FLANGE_SERIAL;
 
 #pragma pack()

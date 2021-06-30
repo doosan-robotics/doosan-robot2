@@ -66,7 +66,7 @@ def generate_launch_description():
 
     # Run DRCF Emulator
     DRCF_node = ExecuteProcess(
-        cmd=['sh', [drcf_path, '/run_drcf.sh']],
+        cmd=['sh', [drcf_path, '/run_drcf.sh'], LaunchConfiguration('port'), LaunchConfiguration('model')],
         output='screen',
         condition=IfCondition(PythonExpression(["'", LaunchConfiguration('mode'), "' == 'virtual'"]))
     )

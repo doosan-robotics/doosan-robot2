@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>dsr_msgs2</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The dsr_msgs2 package</description>
   <author email="kabkyoum.kim@doosan.com">Kab Kyoum Kim</author>
   <maintainer email="ros.robotics@doosan.com">Doosan Robotics</maintainer>

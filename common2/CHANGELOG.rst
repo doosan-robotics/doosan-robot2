@@ -2,8 +2,8 @@
 Changelog for package common2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2021-07-01)
+------------------
 * update changelog
 * update drfl.lib to GL010110
 * launch drcf-emulator automatically

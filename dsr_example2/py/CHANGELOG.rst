@@ -2,8 +2,8 @@
 Changelog for package dsr_example2_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2021-07-01)
+------------------
 * update changelog
 * launch drcf-emulator automatically
 * update moveit package

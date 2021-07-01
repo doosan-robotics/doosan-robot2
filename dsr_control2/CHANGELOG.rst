@@ -2,8 +2,8 @@
 Changelog for package dsr_control2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2021-07-01)
+------------------
 * update changelog
 * update drfl.lib to GL010110
 * Update package.xml

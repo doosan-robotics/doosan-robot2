@@ -2,8 +2,8 @@
 Changelog for package dsr_description2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2021-07-01)
+------------------
 * update changelog
 * update dynamic parameter
 * update moveit package

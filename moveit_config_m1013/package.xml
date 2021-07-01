@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>moveit_config_m1013</name>
-  <version>2.0.0</version>
+  <version>1.0.0</version>
   <description>
     An automatically generated package with all the configuration and launch files for using the m1013 with the MoveIt! Motion Planning Framework
   </description>

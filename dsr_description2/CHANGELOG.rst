@@ -4,6 +4,17 @@ Changelog for package dsr_description2
 
 Forthcoming
 -----------
+* update changelog
+* update dynamic parameter
+* update moveit package
+* modify gazebo shaking
+* ROS2 Alpha
+* for newest ros2_control package
+* ROS2 Alpha
+* ROS2 Alpha
+* ROS2 Alpha
+* Contributors: doosan-robotics
+
 * update dynamic parameter
 * update moveit package
 * modify gazebo shaking

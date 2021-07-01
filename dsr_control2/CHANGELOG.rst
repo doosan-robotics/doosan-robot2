@@ -4,6 +4,18 @@ Changelog for package dsr_control2
 
 Forthcoming
 -----------
+* update changelog
+* update drfl.lib to GL010110
+* Update package.xml
+* launch drcf-emulator automatically
+* update moveit package
+* ROS2 Alpha
+* for newest ros2_control package
+* ROS2 Alpha
+* ROS2 Alpha
+* ROS2 Alpha
+* Contributors: doosan robotics ros master, doosan-robotics
+
 * update drfl.lib to GL010110
 * Update package.xml
 * launch drcf-emulator automatically

@@ -1,5 +1,5 @@
 <robot>
-    <body axis="0">        
+    <body axis="0">
     </body>
     <body axis="1">
         <bv type="capsule">

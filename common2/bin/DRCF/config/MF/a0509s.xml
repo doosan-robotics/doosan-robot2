@@ -159,7 +159,7 @@
             <link name="3">0</link>
             <link name="4">0.367</link>
             <link name="5">0</link>
-            <link name="6">0.124</link>
+            <link name="6">0.127</link>
             <link name="7">0</link>
         </length_d>
         <mass>
@@ -169,17 +169,17 @@
             <link name="4">2.769</link>
             <link name="5">2.679</link>
             <link name="6">2.051</link>
-            <link name="7">0.773</link>
+            <link name="7">0.813</link>
         </mass>
         <cog>
             <x>
-                <link name="1">-1e-06</link>
+            <link name="1">-1e-06</link>
                 <link name="2">-6.9e-05</link>
                 <link name="3">0</link>
                 <link name="4">7.1e-05</link>
                 <link name="5">-8.6e-05</link>
                 <link name="6">9.1e-05</link>
-                <link name="7">-2.2e-05</link>
+                <link name="7">-2.1e-05</link>
             </x>
             <y>
                 <link name="1">-0.001096</link>
@@ -188,7 +188,7 @@
                 <link name="4">0.033009</link>
                 <link name="5">0.086348</link>
                 <link name="6">0.015434</link>
-                <link name="7">-7e-06</link>
+                <link name="7">-4e-06</link>
             </y>
             <z>
                 <link name="1">0.058957</link>
@@ -197,7 +197,7 @@
                 <link name="4">0.56962</link>
                 <link name="5">0.84547</link>
                 <link name="6">0.93796</link>
-                <link name="7">1.0038</link>
+                <link name="7">1.004895</link>
             </z>
         </cog>
         <inertia>
@@ -226,7 +226,7 @@
                 <link name="4">0.008</link>
                 <link name="5">0.009</link>
                 <link name="6">0.004</link>
-                <link name="7">0.0006161</link>
+                <link name="7">0.0006524</link>
             </Izz>
             <Ixy>
                 <link name="1">4.264e-08</link>
@@ -235,7 +235,7 @@
                 <link name="4">7.145e-06</link>
                 <link name="5">1.626e-05</link>
                 <link name="6">3.35e-06</link>
-                <link name="7">2.098e-08</link>
+                <link name="7">3.909e-08</link>
             </Ixy>
             <Iyz>
                 <link name="1">-2.887e-05</link>
@@ -244,7 +244,7 @@
                 <link name="4">0.0004786</link>
                 <link name="5">-0.015</link>
                 <link name="6">0.0001873</link>
-                <link name="7">2.076e-06</link>
+                <link name="7">1.964e-06</link>
             </Iyz>
             <Ixz>
                 <link name="1">3.281e-06</link>
@@ -253,7 +253,7 @@
                 <link name="4">1.153e-05</link>
                 <link name="5">9.991e-06</link>
                 <link name="6">1.145e-05</link>
-                <link name="7">-1.978e-06</link>
+                <link name="7">-1.997e-06</link>
             </Ixz>
         </inertia>
         <limit>
@@ -332,48 +332,48 @@
                 <link name="7">0</link>
             </d>
         </collision>
-        <fts>
-            <m1>
-                <limit>
-                    <link name="1">160.0</link>
-                    <link name="2">160.0</link>
-                    <link name="3">160.0</link>
-                    <link name="4">16.0</link>
-                    <link name="5">16.0</link>
-                    <link name="6">16.0</link>
-                    <link name="7">0</link>
-                </limit>
-                <offset>
-                    <link name="1">6.0</link>
-                    <link name="2">6.0</link>
-                    <link name="3">12.0</link>
-                    <link name="4">0.6</link>
-                    <link name="5">0.6</link>
-                    <link name="6">0.6</link>
-                    <link name="7">0</link>
-                </offset>
-            </m1>
-            <m2>
-                <limit>
-                    <link name="1">630.0</link>
-                    <link name="2">630.0</link>
-                    <link name="3">630.0</link>
-                    <link name="4">53.0</link>
-                    <link name="5">53.0</link>
-                    <link name="6">53.0</link>
-                    <link name="7">0</link>
-                </limit>
-                <offset>
-                    <link name="1">30.0</link>
-                    <link name="2">30.0</link>
-                    <link name="3">30.0</link>
-                    <link name="4">3.0</link>
-                    <link name="5">3.0</link>
-                    <link name="6">3.0</link>
-                    <link name="7">0</link>
-                </offset>
-            </m2>
-        </fts>
+		<fts>
+			<m1>
+				<limit>
+					<link name="1">160.0</link>
+					<link name="2">160.0</link>
+					<link name="3">160.0</link>
+					<link name="4">16.0</link>
+					<link name="5">16.0</link>
+					<link name="6">16.0</link>
+					<link name="7">0</link>
+				</limit>
+				<offset>
+					<link name="1">6.0</link>
+					<link name="2">6.0</link>
+					<link name="3">12.0</link>
+					<link name="4">0.6</link>
+					<link name="5">0.6</link>
+					<link name="6">0.6</link>
+					<link name="7">0</link>
+				</offset>
+			</m1>
+			<m2>
+				<limit>
+					<link name="1">630.0</link>
+					<link name="2">630.0</link>
+					<link name="3">630.0</link>
+					<link name="4">53.0</link>
+					<link name="5">53.0</link>
+					<link name="6">53.0</link>
+					<link name="7">0</link>
+				</limit>
+				<offset>
+					<link name="1">30.0</link>
+					<link name="2">30.0</link>
+					<link name="3">30.0</link>
+					<link name="4">3.0</link>
+					<link name="5">3.0</link>
+					<link name="6">3.0</link>
+					<link name="7">0</link>
+				</offset>
+			</m2>
+		</fts>
     </robot>
     <safetyboard>
         <cog>
@@ -383,7 +383,7 @@
                 <link name="3">7.1e-05</link>
                 <link name="4">-8.6e-05</link>
                 <link name="5">9.1e-05</link>
-                <link name="6">-2.2e-05</link>
+                <link name="6">-2.1e-05</link>
                 <link name="7">0</link>
             </x>
             <y>
@@ -392,7 +392,7 @@
                 <link name="3">-0.005123</link>
                 <link name="4">0.086348</link>
                 <link name="5">-0.006457</link>
-                <link name="6">-7e-06</link>
+                <link name="6">-4e-06</link>
                 <link name="7">0</link>
             </y>
             <z>
@@ -401,7 +401,7 @@
                 <link name="3">0.033009</link>
                 <link name="4">-0.086031</link>
                 <link name="5">0.015434</link>
-                <link name="6">-0.051746</link>
+                <link name="6">-0.053605</link>
                 <link name="7">0</link>
             </z>
         </cog>
@@ -430,7 +430,7 @@
                 <link name="3">0.005</link>
                 <link name="4">0.009</link>
                 <link name="5">0.003</link>
-                <link name="6">0.0006161</link>
+                <link name="6">0.0006524</link>
                 <link name="7">0</link>
             </Izz>
             <Ixy>
@@ -439,7 +439,7 @@
                 <link name="3">-1.153e-05</link>
                 <link name="4">1.626e-05</link>
                 <link name="5">-1.145e-05</link>
-                <link name="6">2.098e-08</link>
+                <link name="6">3.9090e-08</link>
                 <link name="7">0</link>
             </Ixy>
             <Iyz>
@@ -448,7 +448,7 @@
                 <link name="3">-0.0004786</link>
                 <link name="4">-0.015</link>
                 <link name="5">-0.0001873</link>
-                <link name="6">2.076e-06</link>
+                <link name="6"> 1.9640e-06</link>
                 <link name="7">0</link>
             </Iyz>
             <Ixz>
@@ -457,10 +457,10 @@
                 <link name="3">7.145e-06</link>
                 <link name="4">9.991e-06</link>
                 <link name="5">3.35e-06</link>
-                <link name="6">-1.978e-06</link>
+                <link name="6">-1.9970e-06</link>
                 <link name="7">0</link>
             </Ixz>
         </inertia>
     </safetyboard>
-    <crc>1951439624</crc>
+   <crc>1742185636</crc>
 </param>

@@ -32,7 +32,7 @@
             <r>90.0000</r>
         </bv>
     </body>
-    <body axis="4">        
+    <body axis="4">
         <bv type="capsule">
             <a.x>0.0000</a.x>
             <a.y>0.0000</a.y>

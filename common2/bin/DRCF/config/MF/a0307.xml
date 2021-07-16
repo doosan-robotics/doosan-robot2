@@ -19,6 +19,15 @@
             <joint num="6">262144</joint>
             <joint num="7">0</joint>
         </ar>
+        <at>
+            <joint num="1">524288</joint>
+            <joint num="2">524288</joint>
+            <joint num="3">524288</joint>
+            <joint num="4">524288</joint>
+            <joint num="5">524288</joint>
+            <joint num="6">524288</joint>
+            <joint num="7">0</joint>
+        </at>
         <qd>
             <joint num="1">1</joint>
             <joint num="2">1</joint>
@@ -91,12 +100,14 @@
             <joint num="6">-0.00762939</joint>
             <joint num="7">0</joint>
         </ctf>
-        <cpa> <!--count per acceleartion sensor -->
+        <cpa>
+            <!--count per acceleartion sensor -->
             <axis name="x">1</axis>
             <axis name="y">1</axis>
             <axis name="z">1</axis>
         </cpa>
-        <cs> <!--current sensor-->
+        <cs>
+            <!--current sensor-->
             <scale>
                 <joint num="1">0.0243896</joint>
                 <joint num="2">0.0243896</joint>
@@ -323,4 +334,5 @@
             </d>
         </collision>
     </robot>
+    <crc>3475541348</crc>
 </param>

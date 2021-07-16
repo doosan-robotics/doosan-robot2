@@ -58,6 +58,14 @@
             </offset>
         </Fts>
         <Friction>
+            <temperature>
+                <link num="1">11</link>
+                <link num="2">21</link>
+                <link num="3">31</link>
+                <link num="4">41</link>
+                <link num="5">51</link>
+                <link num="6">61</link>
+            </temperature>
             <positive>
                 <link num="1">
                     <coeff num="1">0.0</coeff>

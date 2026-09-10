@@ -32,6 +32,16 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
+      - name: Clear conflicting git credential helpers
+        run: |
+          git config --global --unset-all credential.helper || true
+          sudo git config --system --unset-all credential.helper || true
+
+      - name: Export ROS Python path to CI environment
+        run: |
+          source /opt/ros/${{ matrix.ros_distribution }}/setup.bash
+          echo "PYTHONPATH=${PYTHONPATH}" >> $GITHUB_ENV
+
       - name: doosan dependencies install - poco
         run: sudo apt-get install -y libpoco-dev libyaml-cpp-dev dbus-x11
   
